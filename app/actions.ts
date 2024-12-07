@@ -5,6 +5,62 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+export const addEventAction = async (formData: FormData) => {
+  const supabase = await createClient();
+
+  // Extract fields dynamically
+  const fields = [
+    "title",
+    "description",
+    "tags",
+    "latitude",
+    "longitude",
+    "start_date",
+    "end_date",
+    "duration",
+    "organizer_username",
+    "capacity",
+    "ticket_price",
+    "building",
+    "apartment",
+    "street",
+    "city",
+    "country",
+    "sector",
+  ];
+
+  const eventData: Record<string, any> = {};
+
+  // Dynamically construct the eventData object
+  fields.forEach((field) => {
+    const value = formData.get(field)?.toString();
+    if (value !== undefined && value !== "") {
+      if (field === "tags") {
+        eventData[field] = value.split(",").map((tag) => tag.trim()); // Split tags into an array
+      } else if (["latitude", "longitude", "capacity", "ticket_price", "duration", "apartment", "sector"].includes(field)) {
+        eventData[field] = parseFloat(value) || null; // Convert to numbers where applicable
+      } else {
+        eventData[field] = value;
+      }
+    }
+  });
+
+  // Required field validation
+  if (!eventData.title || !eventData.description || !eventData.start_date || !eventData.end_date) {
+    return encodedRedirect("error", "/events", "Title, description, start date, and end date are required fields.");
+  }
+
+  // Insert the event data into the database
+  const { error } = await supabase.from("events").insert([eventData]);
+
+  if (error) {
+    console.error("Error inserting event:", error.message);
+    return encodedRedirect("error", "/events", "Failed to add event.");
+  }
+
+  return encodedRedirect("success", "/events", "Event successfully added!");
+};
+
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
