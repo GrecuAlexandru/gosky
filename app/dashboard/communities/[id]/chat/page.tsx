@@ -30,5 +30,5 @@ export default async function Page({ params }: ChatPageProps) {
         notFound()
     }
 
-    return <ChatPage params={params} />
+    return <ChatPage id={params.id} />
 }

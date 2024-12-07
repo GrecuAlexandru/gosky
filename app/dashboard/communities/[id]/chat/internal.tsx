@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -19,59 +19,12 @@ interface Message {
     sender: {
         id: string
         name: string
-        avatar: string
     }
     content: string
     timestamp: string
     isSentByMe: boolean
+    isAdmin: boolean
 }
-
-const initialMessages: Message[] = [
-    {
-        id: "1",
-        sender: {
-            id: "user1",
-            name: "Sarah",
-            avatar: "/placeholder.svg?height=40&width=40"
-        },
-        content: "Hey Alex! How's it going?",
-        timestamp: "2023-12-07T14:30:00Z",
-        isSentByMe: false
-    },
-    {
-        id: "2",
-        sender: {
-            id: "user2",
-            name: "Alex",
-            avatar: "/placeholder.svg?height=40&width=40"
-        },
-        content: "Hi Sarah! I'm doing great, thanks for asking. How about you?",
-        timestamp: "2023-12-07T14:32:00Z",
-        isSentByMe: true
-    },
-    {
-        id: "3",
-        sender: {
-            id: "user1",
-            name: "Sarah",
-            avatar: "/placeholder.svg?height=40&width=40"
-        },
-        content: "I'm good too! Just working on some new projects. Anything exciting on your end?",
-        timestamp: "2023-12-07T14:35:00Z",
-        isSentByMe: false
-    },
-    {
-        id: "4",
-        sender: {
-            id: "user2",
-            name: "Alex",
-            avatar: "/placeholder.svg?height=40&width=40"
-        },
-        content: "Actually, yes! I'm learning about AI and machine learning. It's fascinating stuff!",
-        timestamp: "2023-12-07T14:38:00Z",
-        isSentByMe: true
-    }
-]
 
 async function getCommunityData(id: string) {
     console.log("id", id)
@@ -90,10 +43,30 @@ async function getCommunityData(id: string) {
     return data
 }
 
+async function getMessageCommunityId(id: string) {
+    const supabase = createClient()
+    const { data, error } = await supabase
+        .from('communities')
+        .select('messages_communities')
+        .eq('id', id)
+        .single()
+
+    if (error) {
+        console.error("Error fetching community data:", error)
+        return null
+    }
+
+    return data
+}
+
 export default function Internal(props: ChatPageProps) {
-    const [messages, setMessages] = useState<Message[]>(initialMessages)
+    const { id } = props
+    const [messages, setMessages] = useState<Message[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [communityData, setCommunityData] = useState<{ name: string, icon: string } | null>(null)
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+    const [user, setUser] = React.useState<{ id: string; isAdmin: boolean, username: string, first_name: string, last_name: string } | null>(null)
+    const [messagesCommunityId, setMessagesCommunityId] = useState<string | null>(null)
 
     useEffect(() => {
         async function fetchCommunityData() {
@@ -104,23 +77,109 @@ export default function Internal(props: ChatPageProps) {
                 notFound()
             }
         }
+        async function fetchMessagesCommunityId() {
+            const data = await getMessageCommunityId(id)
+            if (data) {
+                setMessagesCommunityId(data.messages_communities)
+                const supabase = createClient()
+                const { data: mData, error: mError } = await supabase
+                    .from('messages_communities')
+                    .select('messages')
+                    .eq('id', data.messages_communities)
+                    .single()
+
+                if (mError) {
+                    console.error("Error fetching messages:", mError)
+                    return
+                }
+
+                if (mData) {
+                    setMessages(mData.messages)
+                }
+            } else {
+                notFound()
+            }
+        }
+        async function getUser() {
+            const supabase = createClient()
+            const { data, error } = await supabase.auth.getUser()
+
+            if (error) {
+                console.error("Error fetching user:", error)
+                return
+            }
+
+            setUser({ id: data.user.id, isAdmin: false, username: "", first_name: data.user.user_metadata.full_name, last_name: "" })
+            const { data: userData, error: userError } = await supabase
+                .from("users")
+                .select("id, isAdmin, username, first_name, last_name")
+                .eq("id", data.user.id)
+                .single()
+
+            if (userError) {
+                console.error("Error fetching user data:", userError)
+                return
+            }
+
+            setUser({ id: userData.id, isAdmin: userData.isAdmin, username: userData.username, first_name: userData.first_name, last_name: userData.last_name })
+
+        }
+
         fetchCommunityData()
+        fetchMessagesCommunityId()
+        getUser()
+
     }, [id])
 
-    const handleSendMessage = (e: React.FormEvent) => {
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [messages])
+
+    useEffect(() => {
+        const supabase = createClient()
+
+        const handleInserts = (payload: any) => {
+            console.log('Change received!', payload)
+            setMessages((prevMessages) => [...prevMessages, payload.new.message])
+        }
+
+        const subscription = supabase
+            .channel('messages_communities')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages_communities' }, handleInserts)
+            .subscribe()
+
+        return () => {
+            subscription.unsubscribe()
+        }
+    }, [])
+
+    const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (newMessage.trim()) {
+        if (newMessage.trim() && user) {
             const newMsg: Message = {
                 id: Date.now().toString(),
                 sender: {
-                    id: "user2",
-                    name: "Alex",
-                    avatar: "/placeholder.svg?height=40&width=40"
+                    id: user.id,
+                    name: user.first_name + " " + user.last_name,
                 },
                 content: newMessage,
                 timestamp: new Date().toISOString(),
-                isSentByMe: true
+                isSentByMe: true,
+                isAdmin: user.isAdmin
             }
+
+            const supabase = createClient()
+            const { data, error } = await supabase
+                .from('messages_communities')
+                .update({ messages: [...messages, newMsg] })
+                .eq('id', messagesCommunityId)
+
+
+            if (error) {
+                console.error("Error inserting message:", error)
+                return
+            }
+
             setMessages([...messages, newMsg])
             setNewMessage('')
         }
@@ -146,7 +205,7 @@ export default function Internal(props: ChatPageProps) {
                             <div className={`flex items-start space-x-2 max-w-[70%] ${message.isSentByMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
                                 {!message.isSentByMe && (
                                     <Avatar>
-                                        <AvatarImage src={message.sender.avatar} alt={message.sender.name} />
+                                        <AvatarImage alt={message.sender.name} />
                                         <AvatarFallback>{message.sender.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                 )}
@@ -162,6 +221,7 @@ export default function Internal(props: ChatPageProps) {
                             </div>
                         </div>
                     ))}
+                    <div ref={messagesEndRef} />
                 </div>
             </ScrollArea>
             <form onSubmit={handleSendMessage} className="flex items-center space-x-2 p-4 bg-white border-t">

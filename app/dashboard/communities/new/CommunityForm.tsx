@@ -21,6 +21,7 @@ export default function CommunityForm() {
         building: string;
         icon: string;
         owner: string;
+        messages_communities: string;
         members: string[];
     }>({
         name: "",
@@ -31,6 +32,7 @@ export default function CommunityForm() {
         building: "",
         icon: "",
         owner: "",
+        messages_communities: "",
         members: []
     })
 
@@ -74,16 +76,41 @@ export default function CommunityForm() {
 
         try {
             const supabase = createClient()
-            const { data, error } = await supabase
+
+            const { data: messagesData, error: messagesError } = await supabase
+                .from('messages_communities')
+                .insert(
+                    {
+                        name: formData.name,
+                        messages: []
+                    })
+                .select('id')
+
+            if (messagesError) {
+                throw messagesError
+            }
+
+            // add community id to formData
+            formData.messages_communities = messagesData[0].id;
+
+
+            const { data: communityData, error: communityError } = await supabase
                 .from('communities')
                 .insert([formData])
                 .select('id') // Select the id of the inserted row
 
-            if (error) {
-                throw error
+            if (communityError) {
+                throw communityError
             }
 
-            const communityId = data[0].id; // Get the generated UUID
+            const communityId = communityData[0].id; // Get the generated UUID
+
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .update({ communities: [...formData.members, communityId] })
+                .eq('id', formData.owner)
+                .select('id')
+
             router.push(`/dashboard/communities/${communityId}`)
         } catch (error) {
             console.error("Error creating community:", error)
