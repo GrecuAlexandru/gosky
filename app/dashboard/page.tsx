@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarIcon, NewspaperIcon, UsersIcon, ClockIcon, MapPinIcon } from 'lucide-react';
 import { redirect } from "next/navigation";
 import React from "react";
+import EventHeatmap from "@/components/EventHeatmap";
 
 const mockData = {
   eventsCount: 15,
@@ -21,7 +22,15 @@ const mockData = {
   },
 };
 
-export default async function DashboardPage() {  
+interface UpcomingEvent {
+  title: string;
+  start_date: string;
+  duration: number;
+  street: string;
+  description: string;
+}
+
+export default async function DashboardPage() {
   const supabase = await createClient();
   
   const {
@@ -38,16 +47,24 @@ export default async function DashboardPage() {
 
   const latestNews = mockData.latestNews;
 
-  const { data: topUpcomingEvent } = await supabase.from("events")
-  .select("title, description, participants, start_date, duration")
+  
+  const { data: nextEventData } = await supabase.from("events")
+  .select("title, description, duration, start_date, duration, street")
   .order("start_date", { ascending: true }).limit(1);
   
+  const topUpcomingEvent: UpcomingEvent | null = nextEventData && nextEventData.length > 0 ? {
+    title: nextEventData[0].title,
+    start_date: nextEventData[0].start_date,
+    duration: nextEventData[0].duration,
+    street: nextEventData[0].street,
+    description: nextEventData[0].description,
+  } : mockData.topUpcomingEvent;
 
   // const { eventsCount, userCount, latestNews, topUpcomingEvent } = mockData;
 
   return (
     <div className="flex-1 w-full p-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">Welcome back, {user.email?.split("@")[0]}!</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
@@ -121,6 +138,15 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        <Card className="col-span-full">
+        <CardHeader>
+          <CardTitle>What's hot</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EventHeatmap />
+        </CardContent>
+      </Card>
       </div>
     </div>
   );
