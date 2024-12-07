@@ -11,9 +11,11 @@ import { addThreadAction } from "@/app/actions";
 
 interface AddThreadButtonProps {
   onAddThread: (newThread: any) => void;
+  communityId: number | undefined;
+  threads: any;
 }
 
-export default function AddThreadButton({ onAddThread }: AddThreadButtonProps) {
+export default function AddThreadButton({ onAddThread, communityId, threads }: AddThreadButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -37,9 +39,9 @@ export default function AddThreadButton({ onAddThread }: AddThreadButtonProps) {
         formDataToSend.append(key, value.toString());
       });
 
-      await addThreadAction(formDataToSend);
-
       onAddThread(newThread);
+      
+      await addThreadAction(formDataToSend, communityId, threads);
     } catch (error) {
       console.error("Error adding thread:", error);
     } finally {
