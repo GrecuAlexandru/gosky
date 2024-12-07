@@ -20,7 +20,7 @@ export default function HoodHubLogo({
         />
         <path
           d="M15 24C19.9706 24 24 19.9706 24 15C24 10.0294 19.9706 6 15 6C10.0294 6 6 10.0294 6 15C6 19.9706 10.0294 24 15 24Z"
-          fill="#3ECF8E"
+          fill="#84B1F3"
         />
         <path
           d="M15 21C18.3137 21 21 18.3137 21 15C21 11.6863 18.3137 9 15 9C11.6863 9 9 11.6863 9 15C9 18.3137 11.6863 21 15 21Z"
@@ -36,8 +36,8 @@ export default function HoodHubLogo({
           y2="27"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#249361" />
-          <stop offset="1" stopColor="#3ECF8E" />
+          <stop stopColor="#0264FA" />
+          <stop offset="1" stopColor="#84B1F3" />
         </linearGradient>
         <clipPath id="clip0_local_vibe">
           <rect width="30" height="30" fill="white" />
