@@ -1,0 +1,101 @@
+import { createClient } from "@/utils/supabase/server";
+import { notFound } from "next/navigation";
+import { CalendarIcon, UsersIcon, MapPinIcon, ClockIcon, InfoIcon, UserIcon } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+
+export default async function EventPage({ params }: { params: { id: string } }) {
+    const supabase = await createClient();
+
+    const { data: event, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", params.id)
+        .single();
+
+    if (error || !event) {
+        notFound();
+    }
+
+    const { data: organizer } = await supabase
+        .from("users")
+        .select("id, username")
+        .eq("id", event.created_by)
+        .single();
+
+    const startDate = new Date(event.start_date);
+    const endDate = new Date(event.end_date);
+    const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
+
+    return (
+        <div className="container mx-auto p-8 bg-gradient-to-br min-h-screen">
+            <h1 className="text-4xl font-bold mb-6 text-center text-green-800">
+                {event.title}
+            </h1>
+
+            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="p-6">
+                    <div className="flex flex-col items-center text-center mb-4">
+                        <UserIcon className="w-6 h-6 text-green-500 mb-2" />
+                        <p className="font-semibold">Organizer</p>
+                        <div className="flex items-center space-x-2 mt-2">
+                            <Avatar>
+                                <AvatarImage src="/placeholder-avatar.png" alt={organizer?.username} />
+                                <AvatarFallback>{organizer?.username?.charAt(0) || 'O'}</AvatarFallback>
+                            </Avatar>
+                            <span>{organizer?.username || 'Unknown Organizer'}</span>
+                        </div>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="flex flex-col items-center text-center">
+                            <CalendarIcon className="w-6 h-6 text-green-500 mb-2" />
+                            <p className="font-semibold">Date & Time</p>
+                            <p>{startDate.toLocaleDateString()} at {startDate.toLocaleTimeString()}</p>
+                        </div>
+
+                        {event.latitude && event.longitude && (
+                            <div className="flex flex-col items-center text-center">
+                                <MapPinIcon className="w-6 h-6 text-green-500 mb-2" />
+                                <p className="font-semibold">Location</p>
+                                <p>{event.city}, {event.street}, {event.building}</p>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col items-center text-center">
+                            <ClockIcon className="w-6 h-6 text-green-500 mb-2" />
+                            <p className="font-semibold">Duration</p>
+                            <p>{duration} hours</p>
+                        </div>
+
+                        <div className="flex flex-col items-center text-center">
+                            <UsersIcon className="w-6 h-6 text-green-500 mb-2" />
+                            <p className="font-semibold">Participants</p>
+                            <p>{event.participants} registered</p>
+                        </div>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="text-center">
+                        <h2 className="text-2xl font-semibold mb-4 flex items-center justify-center">
+                            <InfoIcon className="w-6 h-6 mr-2 text-green-500" />
+                            Description
+                        </h2>
+                        <p className="text-lg leading-relaxed">{event.description}</p>
+                    </div>
+                </div>
+
+                <div className="p-6 bg-gray-50">
+                    <Button className="w-full text-lg py-6" size="lg">
+                        Register for Event
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
