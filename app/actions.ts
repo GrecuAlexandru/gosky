@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 export const addEventAction = async (formData: FormData) => {
   const supabase = await createClient();
 
-  // Extract fields dynamically
+  // Extract fields dynamically (removed "participants")
   const fields = [
     "title",
     "description",
@@ -37,7 +37,9 @@ export const addEventAction = async (formData: FormData) => {
     if (value !== undefined && value !== "") {
       if (field === "tags") {
         eventData[field] = value.split(",").map((tag) => tag.trim()); // Split tags into an array
-      } else if (["latitude", "longitude", "capacity", "ticket_price", "duration", "apartment", "sector"].includes(field)) {
+      } else if (
+        ["latitude", "longitude", "capacity", "ticket_price", "duration", "apartment", "sector"].includes(field)
+      ) {
         eventData[field] = parseFloat(value) || null; // Convert to numbers where applicable
       } else {
         eventData[field] = value;
