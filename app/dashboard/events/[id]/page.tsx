@@ -1,12 +1,19 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { CalendarIcon, UsersIcon, MapPinIcon, ClockIcon, InfoIcon, UserIcon } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import JoinEventButton from "@/components/JoinEventButton";
+import { redirect } from "next/navigation";
 
 export default async function EventPage({ params }: { params: { id: string } }) {
     const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return redirect("/sign-in");
+    }
 
     const { data: event, error } = await supabase
         .from("events")
@@ -23,6 +30,9 @@ export default async function EventPage({ params }: { params: { id: string } }) 
         .select("id, username")
         .eq("id", event.created_by)
         .single();
+
+    const participants = event.participants || [];
+    const isUserRegistered = participants.includes(user.id);
 
     const startDate = new Date(event.start_date);
     const endDate = new Date(event.end_date);
@@ -57,13 +67,11 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                             <p>{startDate.toLocaleDateString()} at {startDate.toLocaleTimeString()}</p>
                         </div>
 
-                        {event.latitude && event.longitude && (
-                            <div className="flex flex-col items-center text-center">
-                                <MapPinIcon className="w-6 h-6 text-green-500 mb-2" />
-                                <p className="font-semibold">Location</p>
-                                <p>{event.city}, {event.street}, {event.building}</p>
-                            </div>
-                        )}
+                        <div className="flex flex-col items-center text-center">
+                            <MapPinIcon className="w-6 h-6 text-green-500 mb-2" />
+                            <p className="font-semibold">Location</p>
+                            <p>{event.city}, {event.street}, {event.building}</p>
+                        </div>
 
                         <div className="flex flex-col items-center text-center">
                             <ClockIcon className="w-6 h-6 text-green-500 mb-2" />
@@ -74,7 +82,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                         <div className="flex flex-col items-center text-center">
                             <UsersIcon className="w-6 h-6 text-green-500 mb-2" />
                             <p className="font-semibold">Participants</p>
-                            <p>{event.participants} registered</p>
+                            <p>{participants.length} registered</p>
                         </div>
                     </div>
 
@@ -90,9 +98,11 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                 </div>
 
                 <div className="p-6 bg-gray-50">
-                    <Button className="w-full text-lg py-6" size="lg">
-                        Register for Event
-                    </Button>
+                    <JoinEventButton
+                        eventId={event.id}
+                        userId={user.id}
+                        isRegistered={isUserRegistered}
+                    />
                 </div>
             </div>
         </div>
