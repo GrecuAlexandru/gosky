@@ -1,87 +1,190 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, UsersIcon } from "lucide-react";
-import AddEventButton from "@/components/AddEventButton"; // Import the button with form logic
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { addEventAction } from "@/app/actions";
 
-interface Event {
-  id: number;
-  title: string;
-  description: string;
-  participants: number;
-  date: string;
+interface AddEventButtonProps {
+  onAddEvent: (newEvent: any) => void;
 }
 
-// Mock Data
-const mockData: Event[] = [
-  {
-    id: 1,
-    title: "Community Garden Planting Day",
-    description:
-      "Join us for a day of planting and beautifying our community garden. Bring your gardening gloves and let's grow together!",
-    participants: 30,
-    date: "2023-07-15T09:00:00Z",
-  },
-  {
-    id: 2,
-    title: "Neighborhood Watch Meeting",
-    description: "Monthly meeting to discuss local safety concerns and strategies. All residents are welcome to attend and contribute.",
-    participants: 25,
-    date: "2023-07-20T19:00:00Z",
-  },
-  // Add more mock data here...
-];
+export default function AddEventButton({ onAddEvent }: AddEventButtonProps) {
+  const router = useRouter(); // Initialize useRouter for redirection
+  const [open, setOpen] = useState(false);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [address, setAddress] = useState({
+    street: "",
+    city: "",
+    country: "",
+  });
 
-function EventList() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    participants: 0,
+    start_date: "",
+    end_date: "",
+  });
+
+  const fetchCoordinates = async () => {
+    const query = `${address.street}, ${address.city}, ${address.country}`;
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+    );
+
+    const data = await response.json();
+    if (data && data.length > 0) {
+      setLatitude(data[0].lat);
+      setLongitude(data[0].lon);
+    }
+  };
 
   useEffect(() => {
-    // Simulate fetching events
-    setEvents(mockData);
-  }, []);
+    if (address.street && address.city && address.country) {
+      fetchCoordinates();
+    }
+  }, [address]);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+  
+    const newEvent = {
+      id: Date.now(),
+      title: formData.title,
+      description: formData.description,
+      participants: Number(formData.participants),
+      start_date: formData.start_date,
+      end_date: formData.end_date,
+      latitude,
+      longitude,
+    };
+  
+    try {
+      // Prepare form data
+      const formDataToSend = new FormData();
+      Object.entries(newEvent).forEach(([key, value]) => {
+        formDataToSend.append(key, value.toString());
+      });
+  
+      // Submit data to the server
+      await addEventAction(formDataToSend);
+  
+      onAddEvent(newEvent);
+    } catch (error) {
+      console.error("Error adding event:", error);
+    } finally {
+      // Ensure the dialog closes
+      setOpen(false);
+    }
+  };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {events.map((event) => (
-        <Card key={event.id} className="flex flex-col">
-          <CardHeader>
-            <CardTitle>{event.title}</CardTitle>
-            <CardDescription>{event.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="mt-auto">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <CalendarIcon className="w-4 h-4" />
-                <time dateTime={event.date}>
-                  {new Date(event.date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-              </div>
-              <Badge variant="secondary" className="flex items-center space-x-1">
-                <UsersIcon className="w-3 h-3" />
-                <span>{event.participants}</span>
-              </Badge>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Add New Event</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Add New Event</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="street">Street</Label>
+            <Input
+              id="street"
+              onChange={(e) => setAddress({ ...address, street: e.target.value })}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                required
+              />
             </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-export default function EventsPage() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Upcoming Events</h1>
-        <AddEventButton /> {/* Integrated AddEventButton component */}
-      </div>
-      <EventList />
-    </div>
+            <div>
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                onChange={(e) => setAddress({ ...address, country: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="latitude">Latitude</Label>
+              <Input id="latitude" value={latitude} readOnly placeholder="Auto-filled Latitude" />
+            </div>
+            <div>
+              <Label htmlFor="longitude">Longitude</Label>
+              <Input id="longitude" value={longitude} readOnly placeholder="Auto-filled Longitude" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="start_date">Start Date</Label>
+              <Input
+                id="start_date"
+                type="date"
+                value={formData.start_date}
+                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="end_date">End Date</Label>
+              <Input
+                id="end_date"
+                type="date"
+                value={formData.end_date}
+                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="participants">Participants</Label>
+            <Input
+              id="participants"
+              type="number"
+              value={formData.participants}
+              onChange={(e) => setFormData({ ...formData, participants: Number(e.target.value) })}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full">
+            Submit
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
