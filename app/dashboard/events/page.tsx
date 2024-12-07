@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AddEventButton from "@/components/AddEventButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ export default function EventList() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true); // Loading state
   const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -42,6 +44,7 @@ export default function EventList() {
 
   const handleAddEvent = (newEvent: Event) => {
     setEvents((prevEvents) => [...prevEvents, newEvent]);
+    router.refresh();
   };
 
   if (loading) {
@@ -49,7 +52,7 @@ export default function EventList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex-1 w-full p-8">
       {/* Add Event Button */}
       <div className="flex justify-end">
         <AddEventButton onAddEvent={handleAddEvent} />
