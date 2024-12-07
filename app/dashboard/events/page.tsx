@@ -1,12 +1,13 @@
 "use client";
 
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddEventButton from "@/components/AddEventButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, UsersIcon } from "lucide-react";
-import { createClient } from "@/utils/supabase/client"; // Import Supabase client
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 interface Event {
   id: number;
@@ -15,32 +16,30 @@ interface Event {
   participants: number;
   start_date: string;
   end_date: string;
-  latitude?: string;
-  longitude?: string;
 }
 
 export default function EventList() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const router = useRouter();
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const { data, error } = await supabase.from("events").select("*"); // Query all events
+        const { data, error } = await supabase.from("events").select("*");
         if (error) throw error;
 
-        setEvents(data || []); // Set the fetched events
+        setEvents(data || []);
       } catch (error) {
         console.error("Error fetching events:", error);
       } finally {
-        setLoading(false); // Turn off loading state
+        setLoading(false);
       }
     };
 
     fetchEvents();
-  }, [supabase]);
+  }, []);
 
   const handleAddEvent = (newEvent: Event) => {
     setEvents((prevEvents) => [...prevEvents, newEvent]);
@@ -48,17 +47,15 @@ export default function EventList() {
   };
 
   if (loading) {
-    return <p>Loading events...</p>; // Show a loading message while fetching data
+    return <p>Loading events...</p>;
   }
 
   return (
     <div className="space-y-6 flex-1 w-full p-8">
-      {/* Add Event Button */}
       <div className="flex justify-end">
         <AddEventButton onAddEvent={handleAddEvent} />
       </div>
 
-      {/* Event Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
           <Card key={event.id} className="flex flex-col">
@@ -75,10 +72,13 @@ export default function EventList() {
                     {new Date(event.end_date).toLocaleDateString()}
                   </span>
                 </div>
-                <Badge className="flex items-center">
-                  <UsersIcon className="w-4 h-4 mr-1" />
-                  {event.participants}
-                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/events/${event.id}`)}
+                >
+                  View Event
+                </Button>
               </div>
             </CardContent>
           </Card>
