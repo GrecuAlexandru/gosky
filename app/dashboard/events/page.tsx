@@ -1,12 +1,13 @@
 "use client";
 
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddEventButton from "@/components/AddEventButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, UsersIcon } from "lucide-react";
-import { createClient } from "@/utils/supabase/client"; // Import Supabase client
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 interface Event {
   id: number;
@@ -15,32 +16,30 @@ interface Event {
   participants: number;
   start_date: string;
   end_date: string;
-  latitude?: string;
-  longitude?: string;
 }
 
 export default function EventList() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const router = useRouter();
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const { data, error } = await supabase.from("events").select("*"); // Query all events
+        const { data, error } = await supabase.from("events").select("*");
         if (error) throw error;
 
-        setEvents(data || []); // Set the fetched events
+        setEvents(data || []);
       } catch (error) {
         console.error("Error fetching events:", error);
       } finally {
-        setLoading(false); // Turn off loading state
+        setLoading(false);
       }
     };
 
     fetchEvents();
-  }, [supabase]);
+  }, []);
 
   const handleAddEvent = (newEvent: Event) => {
     setEvents((prevEvents) => [...prevEvents, newEvent]);
@@ -48,37 +47,48 @@ export default function EventList() {
   };
 
   if (loading) {
-    return <p>Loading events...</p>; // Show a loading message while fetching data
+    return <p className="text-center text-[#383838]">Loading events...</p>;
   }
 
   return (
-    <div className="space-y-6 flex-1 w-full p-8">
+    <div className="space-y-8 flex-1 w-full p-6 bg-[#F3F6FF] min-h-screen">
       {/* Add Event Button */}
       <div className="flex justify-end">
         <AddEventButton onAddEvent={handleAddEvent} />
       </div>
 
-      {/* Event Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Events Grid */}
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {events.map((event) => (
-          <Card key={event.id} className="flex flex-col">
+          <Card
+            key={event.id}
+            className="bg-white shadow-md rounded-lg flex flex-col justify-between hover:shadow-lg transition-shadow duration-300"
+          >
             <CardHeader>
-              <CardTitle>{event.title}</CardTitle>
-              <CardDescription>{event.description}</CardDescription>
+              <CardTitle className="text-[#0264FA] text-lg font-bold">
+                {event.title}
+              </CardTitle>
+              <CardDescription className="text-[#383838]/80">
+                {event.description}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-center text-sm text-[#383838]">
                 <div className="flex items-center space-x-2">
-                  <CalendarIcon className="w-4 h-4" />
+                  <CalendarIcon className="w-5 h-5 text-[#0264FA]" />
                   <span>
                     {new Date(event.start_date).toLocaleDateString()} -{" "}
                     {new Date(event.end_date).toLocaleDateString()}
                   </span>
                 </div>
-                <Badge className="flex items-center">
-                  <UsersIcon className="w-4 h-4 mr-1" />
-                  {event.participants}
-                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/events/${event.id}`)}
+                  className="text-[#0264FA] border-[#0264FA] hover:bg-[#0264FA] hover:text-white transition"
+                >
+                  View Event
+                </Button>
               </div>
             </CardContent>
           </Card>
