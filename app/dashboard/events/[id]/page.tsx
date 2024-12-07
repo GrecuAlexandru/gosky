@@ -5,11 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import JoinEventButton from "@/components/JoinEventButton";
 import { redirect } from "next/navigation";
+import Link from 'next/link';
 
 export default async function EventPage({ params }: { params: { id: string } }) {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
+    const { id: eventId } = await params;
 
     if (!user) {
         return redirect("/sign-in");
@@ -18,7 +20,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
     const { data: event, error } = await supabase
         .from("events")
         .select("*")
-        .eq("id", params.id)
+        .eq("id", eventId)
         .single();
 
     if (error || !event) {
@@ -40,7 +42,12 @@ export default async function EventPage({ params }: { params: { id: string } }) 
 
     return (
         <div className="container mx-auto p-8 bg-gradient-to-br min-h-screen">
-            <h1 className="text-4xl font-bold mb-6 text-center text-green-800">
+            <div className="mb-6">
+                <Link href="/dashboard/events" className="inline-flex items-center px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
+                    ← Back to list
+                </Link>
+            </div>
+            <h1 className="text-4xl font-bold mb-6 text-center">
                 {event.title}
             </h1>
 
@@ -97,7 +104,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                     </div>
                 </div>
 
-                <div className="p-6 bg-gray-50">
+                <div className="p-6">
                     <JoinEventButton
                         eventId={event.id}
                         userId={user.id}
