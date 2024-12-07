@@ -13,6 +13,7 @@ import {
     Search,
     Settings2,
     Sparkles,
+    Users,
     Trash2,
 } from "lucide-react"
 import HoodHubLogo from "@/components/hoodhub-logo"
@@ -32,32 +33,10 @@ import {
     SidebarFooter,
 } from "@/components/ui/sidebar"
 import { createClient } from "@/utils/supabase/client"
+import { usePathname } from 'next/navigation'
 
 // This is sample data.
 const sampleData = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
-    navMain: [
-        {
-            title: "Home",
-            url: "/dashboard",
-            icon: Home,
-            isActive: true,
-        },
-        {
-            title: "Communities",
-            url: "/dashboard/communities",
-            icon: Inbox,
-        },
-        {
-            title: "Events",
-            url: "/dashboard/events",
-            icon: Calendar,
-        }
-    ],
     navSecondary: [
         {
             title: "Settings",
@@ -69,24 +48,13 @@ const sampleData = {
             url: "/help",
             icon: MessageCircleQuestion,
         },
-    ],
-    yourCommunities: [
-        {
-            name: "Project Management & Task Tracking",
-            url: "#",
-            emoji: "📊",
-        },
-        {
-            name: "Family Recipe Collection & Meal Planning",
-            url: "#",
-            emoji: "🍳",
-        },
-    ],
+    ]
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const [user, setUser] = React.useState<{ name: string; email: string } | null>(null);
-
+    const [user, setUser] = React.useState<{ name: string; email: string, isAdmin: boolean } | null>(null);
+    const pathname = usePathname();
+    const [active, setActive] = React.useState(pathname)
     React.useEffect(() => {
         const fetchUser = async () => {
             const supabase = createClient()
@@ -102,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             if (data.user) {
                 const { data: userData, error: userError } = await supabase
                     .from("users")
-                    .select("username")
+                    .select("username, isAdmin")
                     .eq("id", data.user.id)
                     .single()
 
@@ -111,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     return
                 }
 
-                setUser({ name: userData.username, email: data.user.email ?? "" })
+                setUser({ name: userData.username, email: data.user.email ?? "", isAdmin: userData.isAdmin })
             }
         }
 
@@ -130,16 +98,41 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">HoodHub</span>
-                                    <span className="truncate text-xs">Resident</span>
+                                    <span className="truncate text-xs">{user?.isAdmin ? "Administrator" : "Resident"}</span>
                                 </div>
                             </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <NavMain items={sampleData.navMain} />
+                <SidebarMenu>
+                    <SidebarMenuItem key="Home">
+                        <SidebarMenuButton asChild isActive={active === "Home"} onClick={() => setActive("/dashboard")}>
+                            <a href="/dashboard">
+                                <Home />
+                                <span>Home</span>
+                            </a>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem key="Communities">
+                        <SidebarMenuButton asChild isActive={active === "Communities"} onClick={() => setActive("/dashboard/communities")}>
+                            <a href="/dashboard/communities">
+                                <Users />
+                                <span>Communities</span>
+                            </a>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem key="Events">
+                        <SidebarMenuButton asChild isActive={active === "Events"} onClick={() => setActive("/dashboard/events")}>
+                            <a href="/dashboard/events">
+                                <Calendar />
+                                <span>Events</span>
+                            </a>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavYourCommunities yourCommunities={sampleData.yourCommunities} />
+                <NavYourCommunities active={active} setActive={setActive} />
                 <NavSecondary items={sampleData.navSecondary} className="mt-auto" />
             </SidebarContent>
             <SidebarFooter>
