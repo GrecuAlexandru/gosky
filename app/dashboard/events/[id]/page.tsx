@@ -82,7 +82,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
                         <div className="flex flex-col items-center text-center">
                             <MapPinIcon className="w-6 h-6 text-blue-500 mb-2" />
                             <p className="font-semibold">Location</p>
-                            <p>{event.city}, {event.street}, {event.building}</p>
+                            <p>{event.street}</p>
                         </div>
 
                         <div className="flex flex-col items-center text-center">
