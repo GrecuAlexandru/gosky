@@ -1,5 +1,7 @@
-"use client"
+"use client";
 
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import {
     BadgeCheck,
     Bell,
@@ -7,13 +9,13 @@ import {
     CreditCard,
     LogOut,
     Sparkles,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
     Avatar,
     AvatarFallback,
     AvatarImage,
-} from "@/components/ui/avatar"
+} from "@/components/ui/avatar";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,23 +24,30 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 export function NavUser({
     user,
 }: {
     user: {
-        name: string
-        email: string
-    }
+        name: string;
+        email: string;
+    };
 }) {
-    const { isMobile } = useSidebar()
+    const { isMobile } = useSidebar();
+    const router = useRouter();
+    const supabase = createClient();
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push("/");
+    };
 
     return (
         <SidebarMenu>
@@ -101,7 +110,10 @@ export function NavUser({
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={handleLogout}
+                            className="cursor-pointer"
+                        >
                             <LogOut />
                             Log out
                         </DropdownMenuItem>
@@ -109,5 +121,5 @@ export function NavUser({
                 </DropdownMenu>
             </SidebarMenuItem>
         </SidebarMenu>
-    )
+    );
 }
