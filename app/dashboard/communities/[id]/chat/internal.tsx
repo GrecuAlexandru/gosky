@@ -139,13 +139,13 @@ export default function Internal(props: ChatPageProps) {
         const supabase = createClient()
 
         const handleInserts = (payload: any) => {
-            console.log('Change received!', payload)
-            setMessages((prevMessages) => [...prevMessages, payload.new.message])
+            console.log('Change received!', payload.new.messages)
+            setMessages(payload.new.messages)
         }
 
         const subscription = supabase
             .channel('messages_communities')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages_communities' }, handleInserts)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages_communities' }, handleInserts)
             .subscribe()
 
         return () => {
@@ -154,7 +154,7 @@ export default function Internal(props: ChatPageProps) {
     }, [])
 
     const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
         if (newMessage.trim() && user) {
             const newMsg: Message = {
                 id: Date.now().toString(),
@@ -165,29 +165,30 @@ export default function Internal(props: ChatPageProps) {
                 content: newMessage,
                 timestamp: new Date().toISOString(),
                 isSentByMe: true,
-                isAdmin: user.isAdmin
-            }
+                isAdmin: user.isAdmin,
+            };
 
-            const supabase = createClient()
+            const supabase = createClient();
             const { data, error } = await supabase
                 .from('messages_communities')
                 .update({ messages: [...messages, newMsg] })
-                .eq('id', messagesCommunityId)
-
+                .eq('id', messagesCommunityId);
 
             if (error) {
-                console.error("Error inserting message:", error)
-                return
+                console.error("Error inserting message:", error);
+                return;
             }
 
-            setMessages([...messages, newMsg])
-            setNewMessage('')
+            setMessages([...messages, newMsg]);
+            setNewMessage('');
         }
-    }
+    };
 
     if (!communityData) {
         return <div>Loading...</div>
     }
+
+    console.log(messages);
 
     return (
         <div className="h-screen w-full flex flex-col bg-gray-100">
@@ -197,23 +198,23 @@ export default function Internal(props: ChatPageProps) {
             </header>
             <ScrollArea className="flex-grow p-6">
                 <div className="w-full mx-auto space-y-4">
-                    {messages.map((message) => (
+                    {messages.filter(message => message !== undefined).map((message) => (
                         <div
                             key={message.id}
-                            className={`flex ${message.isSentByMe ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${message.sender.id === user?.id ? 'justify-end' : 'justify-start'}`}
                         >
-                            <div className={`flex items-start space-x-2 max-w-[70%] ${message.isSentByMe ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                                {!message.isSentByMe && (
+                            <div className={`flex items-start space-x-2 max-w-[70%] ${message.sender.id === user?.id ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                                {message.sender.id === user?.id && (
                                     <Avatar>
                                         <AvatarImage alt={message.sender.name} />
                                         <AvatarFallback>{message.sender.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                 )}
-                                <Card className={`${message.isSentByMe ? 'bg-blue-500 text-white' : 'bg-white'}`}>
+                                <Card className={`${message.sender.id === user?.id ? 'bg-blue-500 text-white' : 'bg-white'}`}>
                                     <CardContent className="p-3">
                                         <p className="text-sm font-semibold mb-1">{message.sender.name}</p>
                                         <p className="text-sm">{message.content}</p>
-                                        <p className={`text-xs mt-1 ${message.isSentByMe ? 'text-blue-100' : 'text-gray-500'}`}>
+                                        <p className={`text-xs mt-1 ${message.sender.id === user?.id ? 'text-blue-100' : 'text-gray-500'}`}>
                                             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
                                     </CardContent>
