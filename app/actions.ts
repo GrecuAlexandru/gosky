@@ -71,11 +71,13 @@ export const signUpAction = async (formData: FormData) => {
   const country = formData.get("country")?.toString();
   const apartment = formData.get("apartment")?.toString();
   const isAdmin = formData.get("isAdmin") === "on";
+  const firstName = formData.get("first_name")?.toString();
+  const lastName = formData.get("last_name")?.toString();
 
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
-  if (!email || !password || !sector || !street || !building || !city || !country) {
+  if (!email || !firstName || !lastName || !password || !sector || !street || !building || !city || !country) {
     return { error: "All fields are required" };
   }
 
@@ -104,6 +106,8 @@ export const signUpAction = async (formData: FormData) => {
           street: street,
           building: building,
           apartment: apartment,
+          first_name: firstName,
+          last_name: lastName,
           communities: [],
           country: country,
           city: city,
