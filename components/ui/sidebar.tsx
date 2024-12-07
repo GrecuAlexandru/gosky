@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
+import { LogOut } from "lucide-react" // Icon for log out
+import { createClient } from "@/utils/supabase/client" // Supabase client
+import { useRouter } from "next/navigation" // For redirecting
 import {
   Tooltip,
   TooltipContent,
