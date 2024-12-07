@@ -4,6 +4,7 @@ import { CalendarIcon, UsersIcon, MapPinIcon, ClockIcon, InfoIcon, UserIcon } fr
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import JoinEventButton from "@/components/JoinEventButton";
+import DeleteEventButton from "@/components/DeleteEventButton";
 import { redirect } from "next/navigation";
 import Link from 'next/link';
 
@@ -35,6 +36,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
 
     const participants = event.participants || [];
     const isUserRegistered = participants.includes(user.id);
+    const isEventCreator = user.id === event.created_by;
 
     const startDate = new Date(event.start_date);
     const endDate = new Date(event.end_date);
@@ -42,10 +44,13 @@ export default async function EventPage({ params }: { params: { id: string } }) 
 
     return (
         <div className="container mx-auto p-8 bg-gradient-to-br min-h-screen">
-            <div className="mb-6">
+            <div className="mb-6 flex justify-between items-center">
                 <Link href="/dashboard/events" className="inline-flex items-center px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
                     ← Back to list
                 </Link>
+                {isEventCreator && (
+                    <DeleteEventButton eventId={event.id} />
+                )}
             </div>
             <h1 className="text-4xl font-bold mb-6 text-center">
                 {event.title}
