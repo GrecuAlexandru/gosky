@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { createClient } from "@/utils/supabase/client"
-import { validate as validateUUID } from "uuid";
+import { validate as validateUUID } from "uuid"
+import { EmojiBrowser } from "./emoji-browser"
 
 export default function CommunityForm() {
     const router = useRouter()
@@ -67,6 +68,13 @@ export default function CommunityForm() {
         setFormData(prevData => ({
             ...prevData,
             [name]: value
+        }))
+    }
+
+    const handleEmojiSelect = (icon: string) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            icon: icon,
         }))
     }
 
@@ -139,8 +147,20 @@ export default function CommunityForm() {
             <Label htmlFor="building">Building</Label>
             <Input id="building" name="building" value={formData.building} onChange={handleChange} required />
 
-            <Label htmlFor="icon">Icon</Label>
-            <Input id="icon" name="icon" value={formData.icon} onChange={handleChange} required />
+            <div>
+                <Label htmlFor="emoji">Emoji</Label>
+                <div className="flex items-center space-x-2">
+                    <Input
+                        id="emoji"
+                        name="emoji"
+                        value={formData.icon}
+                        onChange={handleChange}
+                        required
+                        readOnly
+                    />
+                    <EmojiBrowser onSelectEmoji={handleEmojiSelect} />
+                </div>
+            </div>
 
             <Button type="submit" disabled={isLoading}>
                 {isLoading ? 'Loading...' : 'Create Community'}

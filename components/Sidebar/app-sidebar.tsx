@@ -106,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
                 <SidebarMenu>
                     <SidebarMenuItem key="Home">
-                        <SidebarMenuButton asChild isActive={active === "Home"} onClick={() => setActive("/dashboard")}>
+                        <SidebarMenuButton asChild isActive={active === "/dashboard"} onClick={() => setActive("/dashboard")}>
                             <a href="/dashboard">
                                 <Home />
                                 <span>Home</span>
@@ -114,7 +114,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem key="Communities">
-                        <SidebarMenuButton asChild isActive={active === "Communities"} onClick={() => setActive("/dashboard/communities")}>
+                        <SidebarMenuButton asChild isActive={active === "/dashboard/communities"} onClick={() => setActive("/dashboard/communities")}>
                             <a href="/dashboard/communities">
                                 <Users />
                                 <span>Communities</span>
@@ -122,7 +122,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem key="Events">
-                        <SidebarMenuButton asChild isActive={active === "Events"} onClick={() => setActive("/dashboard/events")}>
+                        <SidebarMenuButton asChild isActive={active === "/dashboard/events"} onClick={() => setActive("/dashboard/events")}>
                             <a href="/dashboard/events">
                                 <Calendar />
                                 <span>Events</span>
