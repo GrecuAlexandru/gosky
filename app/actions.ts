@@ -8,14 +8,21 @@ import { redirect } from "next/navigation";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const sector = formData.get("sector")?.toString();
+  const street = formData.get("street")?.toString();
+  const building = formData.get("building")?.toString();
+  const city = formData.get("city")?.toString();
+  const country = formData.get("country")?.toString();
+  const apartment = formData.get("apartment")?.toString();
+
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
-  if (!email || !password) {
-    return { error: "Email and password are required" };
+  if (!email || !password || !sector || !street || !building || !city || !country) {
+    return { error: "All fields are required" };
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -23,16 +30,40 @@ export const signUpAction = async (formData: FormData) => {
     },
   });
 
-  if (error) {
-    console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
-      "success",
-      "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
-    );
+  if (authError) {
+    console.error(authError.code + " " + authError.message);
+    return encodedRedirect("error", "/sign-up", authError.message);
   }
+
+  const user = authData.user;
+  if (user) {
+    const { error: insertError } = await supabase
+      .from("users")
+      .insert([
+        {
+          id: user.id,
+          username: email.split("@")[0],
+          sector: sector,
+          street: street,
+          building: building,
+          apartment: apartment,
+          communities: [],
+          country: country,
+          city: city,
+        },
+      ]);
+
+      if(insertError) {
+        console.log("USer insert error:", insertError.message);
+        return encodedRedirect("error", "/sign-up", "Failed to create user");
+      }
+  }
+
+  return encodedRedirect(
+    "success",
+    "/sign-up",
+    "Thanks for signing up! Please check your email for a verification link."
+  );
 };
 
 export const signInAction = async (formData: FormData) => {
