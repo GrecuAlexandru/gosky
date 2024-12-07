@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
+import { SocialLinks } from '@/components/SocialLinks' // Adjust the path if necessary
 
 export default function Home() {
   return (
@@ -43,9 +44,10 @@ export default function Home() {
       </main>
 
       <footer className="bg-muted py-6 px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto text-center text-sm text-muted-foreground">
+        <div className="container mx-auto text-center text-sm text-muted-foreground mb-4">
           &copy; {new Date().getFullYear()} LocalVibe. All rights reserved.
         </div>
+        <SocialLinks />
       </footer>
     </div>
   )
@@ -60,4 +62,3 @@ function FeatureCard({ icon, title, description }: { icon: string; title: string
     </div>
   )
 }
-

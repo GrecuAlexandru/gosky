@@ -14,6 +14,7 @@ export const signUpAction = async (formData: FormData) => {
   const city = formData.get("city")?.toString();
   const country = formData.get("country")?.toString();
   const apartment = formData.get("apartment")?.toString();
+  const isAdmin = formData.get("isAdmin") === "on";
 
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
@@ -50,6 +51,7 @@ export const signUpAction = async (formData: FormData) => {
           communities: [],
           country: country,
           city: city,
+          isAdmin: isAdmin
         },
       ]);
 
