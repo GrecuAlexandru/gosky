@@ -22,17 +22,17 @@ export default function Home() {
           <div className="mt-16">
             <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-8">Why HoodHub?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <FeatureCard 
+              <FeatureCard
                 icon="🏠"
                 title="Hyperlocal Connections"
                 description="Connect with people in your building, street, or neighborhood."
               />
-              <FeatureCard 
+              <FeatureCard
                 icon="🎉"
                 title="Local Events"
                 description="Discover and create events happening right in your community."
               />
-              <FeatureCard 
+              <FeatureCard
                 icon="🤝"
                 title="Community Support"
                 description="Offer or receive help from your neighbors when you need it most."
