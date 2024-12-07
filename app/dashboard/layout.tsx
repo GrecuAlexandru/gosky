@@ -13,9 +13,10 @@ import {
     SidebarMenuItem,
     SidebarProvider,
     SidebarTrigger,
+    SidebarRail,
 } from '@/components/ui/sidebar'
 
-export function SidebarLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
         <SidebarProvider>
             <div className="flex h-screen">
@@ -77,6 +78,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                             </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarFooter>
+                    <SidebarRail />
                 </Sidebar>
                 <main className="flex-1 overflow-y-auto p-4">
                     <SidebarTrigger className="mb-4 md:hidden" />
