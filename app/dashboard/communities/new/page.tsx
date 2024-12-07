@@ -21,8 +21,6 @@ export default async function DashboardPage() {
         .eq("id", user.id)
         .single();
 
-    console.log("userData", userData);
-
     if (error || !userData.isAdmin) {
         return redirect("/404");
     }
