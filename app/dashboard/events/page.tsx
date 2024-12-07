@@ -52,7 +52,7 @@ export default function EventList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex-1 w-full p-8">
       {/* Add Event Button */}
       <div className="flex justify-end">
         <AddEventButton onAddEvent={handleAddEvent} />
