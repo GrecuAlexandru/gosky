@@ -55,10 +55,10 @@ export const addEventAction = async (formData: FormData) => {
 
   if (error) {
     console.error("Error inserting event:", error.message);
-    return encodedRedirect("error", "/events", "Failed to add event.");
+    return encodedRedirect("error", "/dashboard/events", "Failed to add event.");
   }
 
-  return encodedRedirect("success", "/events", "Event successfully added!");
+  return encodedRedirect("success", "/dashboard/events", "Event successfully added!");
 };
 
 export const signUpAction = async (formData: FormData) => {
