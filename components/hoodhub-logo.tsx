@@ -67,7 +67,7 @@ export default function HoodHubLogo() {
           <stop offset="1" stopColor="#3ECF8E" />
         </linearGradient>
         <clipPath id="clip0_local_vibe">
-          <rect width="140" height="30" fill="white" />
+          <rect width="30" height="30" fill="white" />
         </clipPath>
       </defs>
     </svg>
