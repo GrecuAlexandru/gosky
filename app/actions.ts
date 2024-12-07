@@ -115,14 +115,31 @@ export const addEventAction = async (formData: FormData) => {
       }
     }
   });
+}
+
+  export const addThreadAction = async (formData: FormData) => {
+  const supabase = await createClient();
+
+  // Extract fields dynamically
+  const fields = ["title", "content", "community_id"];
+
+  const threadData: Record<string, any> = {};
+
+  // Dynamically construct the threadData object
+  fields.forEach((field) => {
+    const value = formData.get(field)?.toString();
+    if (value !== undefined && value !== "") {
+      threadData[field] = value;
+    }
+  });
 
   // Required field validation
-  if (!eventData.title || !eventData.description || !eventData.start_date || !eventData.end_date) {
+  if (!threadData.title || !threadData.description || !threadData.start_date || !threadData.end_date) {
     return encodedRedirect("error", "/events", "Title, description, start date, and end date are required fields.");
   }
 
   // Insert the event data into the database
-  const { error } = await supabase.from("events").insert([eventData]);
+  const { error } = await supabase.from("events").insert([threadData]);
 
   if (error) {
     console.error("Error inserting event:", error.message);
