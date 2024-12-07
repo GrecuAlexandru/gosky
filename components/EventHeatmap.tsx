@@ -1,34 +1,51 @@
 "use client"; // Required for Next.js App Router
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Map, { Layer, Source } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { createClient } from "@/utils/supabase/client"; // Import Supabase client
 
 // Replace with your actual Mapbox public access token
-const MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiYW5kcmVpc2Fsb21pYSIsImEiOiJjbTRlODg3enMwdnUwMmlzYXVqMzh3bXRzIn0.BXOCj0oiZqI2naZHOGBuLw";
-
-// Hardcoded test data (latitude and longitude for Bucharest)
-const testEvents = [
-  { latitude: 44.4268, longitude: 26.1025 }, // City Center
-  { latitude: 44.429, longitude: 26.103 },  // Close to city center
-  { latitude: 44.44, longitude: 26.12 },    // North Bucharest
-  { latitude: 44.423, longitude: 26.09 },   // South Bucharest
-  { latitude: 44.41, longitude: 26.10 },    // West Bucharest
-];
-
-// Convert test data to GeoJSON format
-const geoJsonData = {
-  type: "FeatureCollection",
-  features: testEvents.map((event) => ({
-    type: "Feature",
-    geometry: {
-      type: "Point",
-      coordinates: [event.longitude, event.latitude],
-    },
-  })),
-};
+const MAPBOX_ACCESS_TOKEN =
+  "pk.eyJ1IjoiYW5kcmVpc2Fsb21pYSIsImEiOiJjbTRlODg3enMwdnUwMmlzYXVqMzh3bXRzIn0.BXOCj0oiZqI2naZHOGBuLw";
 
 export default function EventHeatmap() {
+  const [geoJsonData, setGeoJsonData] = useState<any>({
+    type: "FeatureCollection",
+    features: [],
+  });
+
+  const supabase = createClient();
+
+  // Fetch real event data from the database
+  useEffect(() => {
+    const fetchEvents = async () => {
+        const { data: events, error } = await supabase
+          .from("events") // Replace with your table name
+          .select("latitude, longitude");
+
+        if (error) throw error;
+
+        // Convert fetched data to GeoJSON format
+        const features = events
+          .filter((event) => event.latitude && event.longitude) // Filter out incomplete data
+          .map((event) => ({
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [event.longitude, event.latitude],
+            },
+          }));
+
+        setGeoJsonData({
+          type: "FeatureCollection",
+          features,
+        });
+    };
+
+    fetchEvents();
+  }, [supabase]);
+
   return (
     <Map
       initialViewState={{
