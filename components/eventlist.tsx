@@ -4,14 +4,6 @@ import { Badge } from "@/components/ui/badge"
 import { CalendarIcon, UsersIcon } from 'lucide-react'
 import { createClient } from "@/utils/supabase/client";
 
-interface Event {
-    id: number;
-    title: string;
-    description: string;
-    start_date: string;
-    capacity: number;
-}
-
 var mockData = [
     {
         "id": 1,
