@@ -1,12 +1,6 @@
 "use client";
 
-import {
-    BadgeCheck,
-    Bell,
-    ChevronsUpDown,
-    CreditCard,
-    LogOut,
-} from "lucide-react";
+import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -45,10 +39,9 @@ export function NavUser({
 
     const handleLogOut = async () => {
         try {
-            const { error } = await supabase.auth.signOut(); // Sign out using Supabase
+            const { error } = await supabase.auth.signOut();
             if (error) throw error;
-
-            router.push("/"); // Redirect user to the login/auth page
+            router.push("/");
         } catch (error) {
             console.error("Error logging out:", error);
         }
@@ -65,7 +58,9 @@ export function NavUser({
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
                                 <AvatarImage alt={user.name} />
-                                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                <AvatarFallback className="rounded-lg">
+                                    {user.name.substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-semibold">{user.name}</span>
@@ -84,7 +79,9 @@ export function NavUser({
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-lg">
                                     <AvatarImage alt={user.name} />
-                                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                    <AvatarFallback className="rounded-lg">
+                                        {user.name.substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">{user.name}</span>
@@ -93,14 +90,14 @@ export function NavUser({
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <BadgeCheck />
+                            <DropdownMenuItem onSelect={() => router.push("/account")}>
+                                <BadgeCheck className="mr-2 h-4 w-4" />
                                 Account
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogOut}>
-                            <LogOut />
+                            <LogOut className="mr-2 h-4 w-4" />
                             Log out
                         </DropdownMenuItem>
                     </DropdownMenuContent>
