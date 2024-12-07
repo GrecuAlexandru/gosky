@@ -4,6 +4,75 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache"
+
+export async function joinCommunity(communityId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    console.error("Authentication error:", authError?.message);
+    throw new Error("User not authenticated");
+  }
+
+  // Fetch current community members
+  const { data: communityData, error: fetchCommunityError } = await supabase
+    .from("communities")
+    .select("members")
+    .eq("id", communityId)
+    .single();
+
+  if (fetchCommunityError) {
+    console.error("Error fetching community members:", fetchCommunityError.message);
+    throw new Error("Failed to fetch community data");
+  }
+
+  const updatedMembers = [...(communityData.members || []), user.id];
+
+  // Update the community with the new members array
+  const { error: communityError } = await supabase
+    .from("communities")
+    .update({ members: updatedMembers })
+    .eq("id", communityId);
+
+  if (communityError) {
+    console.error("Error updating community members:", communityError.message);
+    throw new Error("Failed to update community members");
+  }
+
+  // Fetch current user communities
+  const { data: userData, error: fetchUserError } = await supabase
+    .from("users")
+    .select("communities")
+    .eq("id", user.id)
+    .single();
+
+  if (fetchUserError) {
+    console.error("Error fetching user communities:", fetchUserError.message);
+    throw new Error("Failed to fetch user data");
+  }
+
+  const updatedCommunities = [...(userData.communities || []), communityId];
+
+  // Update the user with the new communities array
+  const { error: userError } = await supabase
+    .from("users")
+    .update({ communities: updatedCommunities })
+    .eq("id", user.id);
+
+  if (userError) {
+    console.error("Error updating user communities:", userError.message);
+    throw new Error("Failed to update user communities");
+  }
+
+  revalidatePath("/communities");
+  return { success: true };
+}
+
 
 export const addEventAction = async (formData: FormData) => {
   const supabase = await createClient();
