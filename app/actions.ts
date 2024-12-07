@@ -140,7 +140,7 @@ export const signUpAction = async (formData: FormData) => {
   const building = formData.get("building")?.toString();
   const city = formData.get("city")?.toString();
   const country = formData.get("country")?.toString();
-  const apartment = formData.get("apartment")?.toString();
+  let apartment = formData.get("apartment")?.toString() || "N/A"; // Default value
   const isAdmin = formData.get("isAdmin") === "on";
   const firstName = formData.get("first_name")?.toString();
   const lastName = formData.get("last_name")?.toString();
@@ -149,7 +149,7 @@ export const signUpAction = async (formData: FormData) => {
   const origin = (await headers()).get("origin");
 
   if (!email || !firstName || !lastName || !password || !sector || !street || !building || !city || !country) {
-    return { error: "All fields are required" };
+    return { error: "All fields are required except apartment" };
   }
 
   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -173,28 +173,28 @@ export const signUpAction = async (formData: FormData) => {
         {
           id: user.id,
           username: email.split("@")[0],
-          sector: sector,
-          street: street,
-          building: building,
-          apartment: apartment,
+          sector,
+          street,
+          building,
+          apartment, // This will be "N/A" if left empty
           first_name: firstName,
           last_name: lastName,
           communities: [],
-          country: country,
-          city: city,
-          isAdmin: isAdmin
+          country,
+          city,
+          isAdmin,
         },
       ]);
 
-      if(insertError) {
-        console.log("USer insert error:", insertError.message);
-        return encodedRedirect("error", "/sign-up", "Failed to create user");
-      }
+    if (insertError) {
+      console.error("User insert error:", insertError.message);
+      return encodedRedirect("error", "/sign-up", "Failed to create user");
+    }
   }
 
   return encodedRedirect(
     "success",
-    "/sign-up",
+    "/dashboard", // de modificat aici daca facem cu mail in /sign-up
     "Thanks for signing up! Please check your email for a verification link."
   );
 };
