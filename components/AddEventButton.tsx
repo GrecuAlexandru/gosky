@@ -1,155 +1,87 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { addEventAction } from "@/app/actions";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CalendarIcon, UsersIcon } from "lucide-react";
+import AddEventButton from "@/components/AddEventButton"; // Import the button with form logic
 
-export default function AddEventButton() {
-  const [open, setOpen] = useState(false);
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
-  const [address, setAddress] = useState({
-    street: "",
-    city: "",
-    country: "",
-  });
+interface Event {
+  id: number;
+  title: string;
+  description: string;
+  participants: number;
+  date: string;
+}
 
-  // Function to fetch latitude and longitude
-  const fetchCoordinates = async () => {
-    const query = `${address.street}, ${address.city}, ${address.country}`;
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
-    );
+// Mock Data
+const mockData: Event[] = [
+  {
+    id: 1,
+    title: "Community Garden Planting Day",
+    description:
+      "Join us for a day of planting and beautifying our community garden. Bring your gardening gloves and let's grow together!",
+    participants: 30,
+    date: "2023-07-15T09:00:00Z",
+  },
+  {
+    id: 2,
+    title: "Neighborhood Watch Meeting",
+    description: "Monthly meeting to discuss local safety concerns and strategies. All residents are welcome to attend and contribute.",
+    participants: 25,
+    date: "2023-07-20T19:00:00Z",
+  },
+  // Add more mock data here...
+];
 
-    const data = await response.json();
-    if (data && data.length > 0) {
-      setLatitude(data[0].lat);
-      setLongitude(data[0].lon);
-    }
-  };
+function EventList() {
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
-    if (address.street && address.city && address.country) {
-      fetchCoordinates();
-    }
-  }, [address]);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-
-    // Validate required fields
-    if (!formData.get("start_date") || !formData.get("end_date")) {
-      alert("Start date and end date are required!");
-      return;
-    }
-
-    formData.set("latitude", latitude);
-    formData.set("longitude", longitude);
-    await addEventAction(formData);
-    setOpen(false);
-  };
+    // Simulate fetching events
+    setEvents(mockData);
+  }, []);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Add New Event</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Add New Event</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="overflow-y-auto pr-2 space-y-4">
-            {/* Title */}
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input id="title" name="title" placeholder="Event Title" required />
-            </div>
-
-            {/* Description */}
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" name="description" placeholder="Event Description" required />
-            </div>
-
-            {/* Address Fields */}
-            <div>
-              <Label htmlFor="street">Street</Label>
-              <Input
-                id="street"
-                name="street"
-                placeholder="Street"
-                required
-                onChange={(e) => setAddress({ ...address, street: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  name="city"
-                  placeholder="City"
-                  required
-                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                />
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {events.map((event) => (
+        <Card key={event.id} className="flex flex-col">
+          <CardHeader>
+            <CardTitle>{event.title}</CardTitle>
+            <CardDescription>{event.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="mt-auto">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <CalendarIcon className="w-4 h-4" />
+                <time dateTime={event.date}>
+                  {new Date(event.date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </time>
               </div>
-              <div>
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  name="country"
-                  placeholder="Country"
-                  required
-                  onChange={(e) => setAddress({ ...address, country: e.target.value })}
-                />
-              </div>
+              <Badge variant="secondary" className="flex items-center space-x-1">
+                <UsersIcon className="w-3 h-3" />
+                <span>{event.participants}</span>
+              </Badge>
             </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
-            {/* Start and End Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="start_date">Start Date</Label>
-                <Input id="start_date" name="start_date" type="date" required />
-              </div>
-              <div>
-                <Label htmlFor="end_date">End Date</Label>
-                <Input id="end_date" name="end_date" type="date" required />
-              </div>
-            </div>
-
-            {/* Latitude and Longitude */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="latitude">Latitude</Label>
-                <Input id="latitude" name="latitude" value={latitude} readOnly placeholder="Auto-filled Latitude" />
-              </div>
-              <div>
-                <Label htmlFor="longitude">Longitude</Label>
-                <Input id="longitude" name="longitude" value={longitude} readOnly placeholder="Auto-filled Longitude" />
-              </div>
-            </div>
-
-            {/* Capacity */}
-            <div>
-              <Label htmlFor="capacity">Capacity</Label>
-              <Input id="capacity" name="capacity" type="number" placeholder="Capacity" required />
-            </div>
-          </div>
-
-          <div className="mt-4 border-t pt-4">
-            <Button type="submit" className="w-full">
-              Add Event
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+export default function EventsPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Upcoming Events</h1>
+        <AddEventButton /> {/* Integrated AddEventButton component */}
+      </div>
+      <EventList />
+    </div>
   );
 }
