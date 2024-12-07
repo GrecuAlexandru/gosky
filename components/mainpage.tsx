@@ -5,23 +5,32 @@ import { SocialLinks } from "@/components/SocialLinks"; // Adjust the path if ne
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#F3F6FF] text-[#383838]">
       <main className="flex-grow">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-4">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#0264FA] mb-4">
               Welcome to HoodHub
             </h1>
-            <p className="text-xl sm:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-xl sm:text-2xl text-[#383838] mb-8 max-w-2xl mx-auto">
               Connect with your neighbors, start local events, and build a stronger community right where you live.
             </p>
 
             {/* Buttons for Signup and Login */}
             <div className="flex justify-center gap-4">
-              <Button size="lg" asChild>
+              <Button
+                size="lg"
+                className="bg-[#0264FA] text-white hover:bg-[#0264FA]/90"
+                asChild
+              >
                 <Link href="/sign-up">Sign Up</Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-[#0264FA] text-[#0264FA] hover:bg-[#EAECED] hover:text-[#0264FA]"
+                asChild
+              >
                 <Link href="/sign-in">Log In</Link>
               </Button>
             </div>
@@ -29,7 +38,7 @@ export default function Home() {
 
           {/* Why HoodHub Section */}
           <div className="mt-16">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-8 text-[#383838]">
               Why HoodHub?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -54,9 +63,9 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-muted py-6 px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto text-center text-sm text-muted-foreground mb-4">
-          &copy; {new Date().getFullYear()} LocalVibe. All rights reserved.
+      <footer className="bg-[#EAECED] py-6 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto text-center text-sm text-[#383838] mb-4">
+          &copy; {new Date().getFullYear()} HoodHub. All rights reserved.
         </div>
         <SocialLinks />
       </footer>
@@ -74,10 +83,10 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="bg-card text-card-foreground rounded-lg p-6 shadow-sm">
-      <div className="text-4xl mb-4">{icon}</div>
+    <div className="bg-white text-[#383838] rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+      <div className="text-4xl text-[#0264FA] mb-4">{icon}</div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-muted-foreground">{description}</p>
+      <p className="text-[#383838]/80">{description}</p>
     </div>
   );
 }
