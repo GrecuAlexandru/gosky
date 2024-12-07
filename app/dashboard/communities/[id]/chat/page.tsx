@@ -1,23 +1,18 @@
-import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { CommunityHeader } from './community-header'
-import { GeneralChat } from './general-chat'
-import { Button } from '@/components/ui/button'
-import { PlusIcon } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from "@/utils/supabase/client"
+import { notFound } from "next/navigation"
+import ChatPage from './internal'
 
-interface CommunityPageProps {
-    params: { id: string }
+interface ChatPageProps {
+    params: {
+        id: string
+    }
 }
-
-
 
 async function getCommunityData(id: string) {
     const supabase = createClient()
-    console.log("id", id)
     const { data, error } = await supabase
         .from('communities')
-        .select('name, description, icon')
+        .select('name, icon')
         .eq('id', id)
         .single()
 
@@ -29,28 +24,11 @@ async function getCommunityData(id: string) {
     return data
 }
 
-export default async function CommunityPage({ params }: CommunityPageProps) {
+export default async function Page({ params }: ChatPageProps) {
     const communityData = await getCommunityData(params.id)
-
-    // if (!communityData) {
-    //     notFound()
-    // }
-
     if (!communityData) {
         notFound()
     }
 
-    return (
-        <div className="container mx-auto px-4 py-8">
-            <CommunityHeader
-                title={communityData.name}
-                description={communityData.description}
-                icon={communityData.icon}
-            />
-            <div className="mt-8 grid gap-8 md:grid-cols-2">
-                <h2 className="text-2xl font-bold mb-4">General Chat</h2>
-                <GeneralChat communityId={params.id} />
-            </div>
-        </div>
-    )
+    return <ChatPage params={params} />
 }
