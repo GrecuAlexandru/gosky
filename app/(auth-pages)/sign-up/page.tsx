@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
-export default async function Signup(props: { searchParams: Promise<Message> }) {
+export default async function Signup(props: {
+  searchParams: Promise<Message>;
+}) {
   const searchParams = await props.searchParams;
   if ("message" in searchParams) {
     return (
@@ -123,6 +125,31 @@ export default async function Signup(props: { searchParams: Promise<Message> }) 
               name="city"
               placeholder="Enter your city"
               required
+              className="bg-[#EAECED] focus:ring-[#0264FA]"
+            />
+          </div>
+
+          {/* Building */}
+          <div>
+            <Label htmlFor="building" className="text-[#383838]">
+              Building Number
+            </Label>
+            <Input
+              name="building"
+              placeholder="Enter building number"
+              required
+              className="bg-[#EAECED] focus:ring-[#0264FA]"
+            />
+          </div>
+
+          {/* Apartment */}
+          <div>
+            <Label htmlFor="apartment" className="text-[#383838]">
+              Apartment
+            </Label>
+            <Input
+              name="apartment"
+              placeholder="Enter your apartment"
               className="bg-[#EAECED] focus:ring-[#0264FA]"
             />
           </div>
