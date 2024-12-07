@@ -11,9 +11,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/utils/supabase/client"
 
 interface ChatPageProps {
-    params: {
-        id: string
-    }
+    id: string
 }
 
 interface Message {
@@ -99,7 +97,7 @@ export default function Internal(props: ChatPageProps) {
 
     useEffect(() => {
         async function fetchCommunityData() {
-            const data = await getCommunityData(params.id)
+            const data = await getCommunityData(id)
             if (data) {
                 setCommunityData(data)
             } else {
@@ -107,7 +105,7 @@ export default function Internal(props: ChatPageProps) {
             }
         }
         fetchCommunityData()
-    }, [params.id])
+    }, [id])
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault()
