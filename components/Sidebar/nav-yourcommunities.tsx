@@ -6,6 +6,7 @@ import {
     MoreHorizontal,
     StarOff,
     Trash2,
+    Plus,
 } from "lucide-react"
 
 import {
@@ -22,57 +23,142 @@ import {
     SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
     useSidebar,
 } from "@/components/ui/sidebar"
 
-export function NavYourCommunities({
-    yourCommunities,
-  }: {
-    yourCommunities: {
-      name: string
-      url: string
-      emoji: string
-    }[]
-  }) {
+import { ChevronRight, type LucideIcon } from "lucide-react"
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { createClient } from "@/utils/supabase/client"
+import * as React from "react"
+
+interface NavYourCommunitiesProps {
+    active: string;
+    setActive: (active: string) => void;
+}
+
+export function NavYourCommunities({ active, setActive }: NavYourCommunitiesProps) {
     const { isMobile } = useSidebar()
-  
+    const [user, setUser] = React.useState<{ id: string; isAdmin: boolean; communities: string[] } | null>(null)
+    const [yourCommunities, setYourCommunities] = React.useState<
+        { name: string; id: string; url: string; emoji: string; isActive: boolean }[]
+    >([])
+
+    React.useEffect(() => {
+        const fetchUser = async () => {
+            const supabase = createClient()
+            const { data, error } = await supabase.auth.getUser()
+
+            if (error) {
+                console.error("Error fetching user:", error)
+                return
+            }
+
+            if (data.user) {
+                const { data: userData, error: userError } = await supabase
+                    .from("users")
+                    .select("id, isAdmin, communities")
+                    .eq("id", data.user.id)
+                    .single()
+
+                if (userError) {
+                    console.error("Error fetching user data:", userError)
+                    return
+                }
+
+                setUser({ id: userData.id, isAdmin: userData.isAdmin, communities: userData.communities })
+            }
+        }
+
+        fetchUser()
+    }, [])
+
+    React.useEffect(() => {
+        const fetchCommunities = async () => {
+            if (!user || !user.communities.length) return
+
+            const supabase = createClient()
+            const { data, error } = await supabase
+                .from("communities")
+                .select("name, id, icon")
+                .in("id", user.communities)
+
+            if (error) {
+                console.error("Error fetching communities:", error)
+                return
+            }
+
+            setYourCommunities(data.map((community: { name: string; id: string; icon: string }) => ({
+                name: community.name,
+                url: `/dashboard/communities/${community.id}`,
+                id: community.id,
+                emoji: community.icon,
+                isActive: false,
+            })))
+        }
+
+        fetchCommunities()
+    }, [user])
+
+    console.log("active", active)
+
     return (
-      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel className="text-[#383838]">Your Communities</SidebarGroupLabel>
-        <SidebarMenu>
-          {yourCommunities.map((item) => (
-            <SidebarMenuItem key={item.name}>
-              <SidebarMenuButton asChild>
-                <a
-                  href={item.url}
-                  title={item.name}
-                  className="hover:bg-[#F3F6FF] hover:text-[#0264FA] text-[#383838] rounded-md px-2 py-1 transition-colors"
-                >
-                  <span>{item.emoji}</span>
-                  <span>{item.name}</span>
-                </a>
-              </SidebarMenuButton>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuAction showOnHover>
-                    <MoreHorizontal className="text-[#383838]" />
-                    <span className="sr-only">More</span>
-                  </SidebarMenuAction>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="w-56 rounded-lg border border-[#EAECED] bg-white"
-                  side={isMobile ? "bottom" : "right"}
-                  align={isMobile ? "end" : "start"}
-                >
-                  <DropdownMenuItem className="hover:bg-[#F3F6FF] hover:text-[#0264FA]">
-                    <Trash2 className="text-[#383838]" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroup>
+        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel>Your Communities</SidebarGroupLabel>
+            <SidebarMenu>
+                {yourCommunities.map((item) => (
+                    <Collapsible key={item.name} asChild defaultOpen={active === `/dashboard/communities/${item.id}/chat` || active === `/dashboard/communities/${item.id}/threads`}>
+                        <SidebarMenuItem key={item.name}>
+                            <SidebarMenuButton asChild isActive={active === item.url} onClick={() => setActive(item.url)}>
+                                <a href={item.url} title={item.name}>
+                                    <span>{item.emoji}</span>
+                                    <span>{item.name}</span>
+                                </a>
+                            </SidebarMenuButton>
+                            <CollapsibleTrigger asChild>
+                                <SidebarMenuAction className="data-[state=open]:rotate-90">
+                                    <ChevronRight />
+                                    <span className="sr-only">Toggle</span>
+                                </SidebarMenuAction>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <SidebarMenuSub>
+                                    <SidebarMenuSubItem key={item.id + "Chat"}>
+                                        <SidebarMenuSubButton asChild isActive={active === `/dashboard/communities/${item.id}/chat`} onClick={() => setActive(`/dashboard/communities/${item.id}/chat`)}>
+                                            <a href={"/dashboard/communities/" + item.id + "/chat"}>
+                                                <span>Chat</span>
+                                            </a>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                    <SidebarMenuSubItem key={item.id + "Threads"}>
+                                        <SidebarMenuSubButton asChild isActive={active === `/dashboard/communities/${item.id}/threads`} onClick={() => setActive(`/dashboard/communities/${item.id}/threads`)}>
+                                            <a href={"/dashboard/communities/" + item.id + "/threads"}>
+                                                <span>Threads</span>
+                                            </a>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                </SidebarMenuSub>
+                            </CollapsibleContent>
+                        </SidebarMenuItem>
+                    </Collapsible>
+                ))}
+                {user?.isAdmin && (
+                    <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                            <a href="/dashboard/communities/new" title="Create a new community">
+                                <Plus />
+                                <span>Create a new community</span>
+                            </a>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                )}
+            </SidebarMenu>
+        </SidebarGroup>
     )
-  }
+}
