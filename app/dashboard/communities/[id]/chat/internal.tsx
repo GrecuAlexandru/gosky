@@ -212,9 +212,9 @@ export default function Internal(props: ChatPageProps) {
                                 )}
                                 <Card className={`${message.sender.id === user?.id ? 'bg-blue-500 text-white' : 'bg-white'}`}>
                                     <CardContent className="p-3">
-                                        <p className="text-sm font-semibold mb-1">{message.sender.name}</p>
-                                        <p className="text-sm">{message.content}</p>
-                                        <p className={`text-xs mt-1 ${message.sender.id === user?.id ? 'text-blue-100' : 'text-gray-500'}`}>
+                                        <p className="text-base font-semibold mb-1">{message.sender.name}</p>
+                                        <p className="text-base">{message.content}</p>
+                                        <p className={`text-sm mt-1 ${message.sender.id === user?.id ? 'text-blue-100' : 'text-gray-500'}`}>
                                             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
                                     </CardContent>

@@ -4,6 +4,7 @@ import { CommunityHeader } from './community-header'
 import { Button } from '@/components/ui/button'
 import { PlusIcon } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import Internal from './internal'
 
 interface CommunityPageProps {
     params: { id: string }
@@ -30,23 +31,13 @@ async function getCommunityData(id: string) {
 export default async function CommunityPage({ params }: CommunityPageProps) {
     const communityData = await getCommunityData(params.id)
 
-    // if (!communityData) {
-    //     notFound()
-    // }
-
     if (!communityData) {
         notFound()
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <CommunityHeader
-                title={communityData.name}
-                description={communityData.description}
-                icon={communityData.icon}
-            />
-            <div className="mt-8 grid gap-8 md:grid-cols-2">
-            </div>
+        <div className="flex flex-col w-full">
+            <Internal id={params.id} />
         </div>
     )
 }
