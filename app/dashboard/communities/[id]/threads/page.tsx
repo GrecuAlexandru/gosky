@@ -110,7 +110,7 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: number }
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => router.push(`/threads/${thread.id}`)}
+                  onClick={() => router.push(`/dashboard/communities/${communityId}/threads/${thread.id}`)}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 >
                   View Thread
