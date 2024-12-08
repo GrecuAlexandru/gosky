@@ -15,7 +15,7 @@ interface Event {
   id: number;
   title: string;
   description: string;
-  participants: number;
+  participants: number[];
   start_date: string;
   end_date: string;
 }
@@ -96,7 +96,7 @@ export default function EventList() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Users className="w-4 h-4 text-blue-500" />
-                    <span>{event.participants} participants</span>
+                    <span>{event.participants.length} participants</span>
                   </div>
                 </div>
                 <Button
