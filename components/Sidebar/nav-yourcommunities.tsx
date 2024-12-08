@@ -84,29 +84,36 @@ export function NavYourCommunities({ active, setActive }: NavYourCommunitiesProp
             if (!user || !user.communities.length) return
 
             const supabase = createClient()
-            const { data, error } = await supabase
-                .from("communities")
-                .select("name, id, icon")
-                .in("id", user.communities)
+            const communitiesData = []
 
-            if (error) {
-                console.error("Error fetching communities:", error)
-                return
+            for (const communityId of user.communities) {
+                const { data, error } = await supabase
+                    .from("communities")
+                    .select("name, id, icon")
+                    .eq("id", communityId)
+                    .single()
+
+                if (error) {
+                    console.error(`Error fetching community with id ${communityId}:`, error)
+                    continue
+                }
+
+                communitiesData.push({
+                    name: data.name,
+                    url: `/dashboard/communities/${data.id}`,
+                    id: data.id,
+                    emoji: data.icon,
+                    isActive: false,
+                })
             }
 
-            setYourCommunities(data.map((community: { name: string; id: string; icon: string }) => ({
-                name: community.name,
-                url: `/dashboard/communities/${community.id}`,
-                id: community.id,
-                emoji: community.icon,
-                isActive: false,
-            })))
+            setYourCommunities(communitiesData)
         }
 
         fetchCommunities()
     }, [user])
 
-    console.log("active", active)
+    console.log("yourCommunities", yourCommunities)
 
     return (
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">

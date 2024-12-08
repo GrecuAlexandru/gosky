@@ -36,6 +36,7 @@ export default function CommunityForm() {
         messages_communities: "",
         members: []
     })
+    const [userCommunities, setUserCommunities] = useState<string[]>([])
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -111,13 +112,32 @@ export default function CommunityForm() {
                 throw communityError
             }
 
-            const communityId = communityData[0].id; // Get the generated UUID
+            const communityId = communityData[0].id;
 
-            const { data: userData, error: userError } = await supabase
+            const { data: dd, error: ddd } = await supabase
                 .from('users')
-                .update({ communities: [...formData.members, communityId] })
+                .select('communities')
                 .eq('id', formData.owner)
-                .select('id')
+
+            if (ddd) {
+                throw ddd
+            }
+
+            setUserCommunities(dd[0].communities)
+
+            const v = dd[0].communities
+            v.push(communityId)
+
+            console.log("v", v)
+
+            const { data: userCommunitiesData, error: userCommunitiesError } = await supabase
+                .from('users')
+                .update({ communities: v })
+                .eq('id', formData.owner)
+
+            if (userCommunitiesError) {
+                throw userCommunitiesError
+            }
 
             router.push(`/dashboard/communities/${communityId}`)
         } catch (error) {

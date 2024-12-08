@@ -33,6 +33,7 @@ export function CommunitiesGrid({ communities, userId }: CommunitiesGridProps) {
   const handleJoin = async (communityId: string) => {
     try {
       setJoiningId(communityId);
+      console.log("Joining community:", communityId);
       await joinCommunity(communityId);
     } catch (error) {
       console.error("Failed to join community:", error);
@@ -81,8 +82,8 @@ export function CommunitiesGrid({ communities, userId }: CommunitiesGridProps) {
               {community.members.includes(userId)
                 ? "Joined"
                 : joiningId === community.id
-                ? "Joining..."
-                : "Join Community"}
+                  ? "Joining..."
+                  : "Join Community"}
             </Button>
           </CardFooter>
         </Card>
