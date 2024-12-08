@@ -197,7 +197,7 @@ export default function Internal(props: CommunityPageProps) {
                     </div>
                     <div className="flex items-center">
                         <MapPin className="w-6 h-6 mr-2 text-blue-500" />
-                        <span className="text-lg font-semibold">{communityData.city + " " + communityData.street}</span>
+                        <span className="text-lg font-semibold">{communityData.country + ", " + communityData.city + ", " + communityData.street + ", " + communityData.building}</span>
                     </div>
                 </div>
 
