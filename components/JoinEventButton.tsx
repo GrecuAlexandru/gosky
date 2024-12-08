@@ -50,7 +50,7 @@ export default function JoinEventButton({ eventId, userId, isRegistered: initial
         <Button 
             onClick={handleJoin} 
             disabled={isRegistered || isLoading}
-            className="w-full text-lg py-6"
+            className="w-full text-lg py-6 bg-[#0264FA] text-[#FFFFFF] hover:bg-[#0057D4] transition duration-200"
             size="lg"
         >
             {isRegistered ? 'Already Joined' : (isLoading ? 'Joining...' : 'Join Event')}

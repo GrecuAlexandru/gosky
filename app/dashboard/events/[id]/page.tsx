@@ -45,7 +45,7 @@ export default async function EventPage({ params }: { params: { id: string } }) 
     return (
         <div className="container mx-auto p-8 bg-gradient-to-br min-h-screen">
             <div className="mb-6 flex justify-between items-center">
-                <Link href="/dashboard/events" className="inline-flex items-center px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
+                <Link href="/dashboard/events" className="inline-flex items-center px-4 py-2 text-blue-600 border-blue-600 hover:bg-blue-50">
                     ← Back to list
                 </Link>
                 {isEventCreator && (

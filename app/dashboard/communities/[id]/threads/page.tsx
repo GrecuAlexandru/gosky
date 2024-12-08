@@ -5,14 +5,22 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { MessageCircle } from 'lucide-react'
 import AddThreadButton from '@/components/AddThreadButton'
 import { ArrowRight } from 'lucide-react'
+
+interface Message {
+  username: string,
+  content: string
+}
 
 interface Thread {
   id: number
   title: string
   content: string
   created_at: string
+  messages: Message[]
 }
 
 export default function ThreadsPage({ params }: { params: Promise<{ id: number }> }) {
@@ -52,49 +60,72 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: number }
   };
 
   return (
-    <div className="space-y-8 flex-1 w-full p-6 bg-[#F3F6FF] min-h-screen">
-      <h1 className="text-3xl font-bold text-center mb-8">Community Threads</h1>
-      <div className="flex justify-start mb-6">
+    <div className="flex-1 w-full flex flex-col gap-8 bg-gradient-to-b from-gray-50 to-white px-6 py-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-800">Community Discussions</h1>
+          <p className="text-gray-600 mt-2">Engage in conversations and share your thoughts</p>
+        </div>
         <AddThreadButton onAddThread={handleAddThread} communityId={communityId ?? 0} />
       </div>
+
       <div className="space-y-4">
         {loading ? (
-          <Card className="p-6">
-            <p className="text-center text-[#383838]">Loading threads...</p>
-          </Card>
+          Array.from({ length: 3 }).map((_, index) => (
+            <Card key={index} className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-8 w-24" />
+              </CardFooter>
+            </Card>
+          ))
         ) : threads.length > 0 ? (
           threads.map((thread) => (
             <Card
               key={thread.id}
-              className="bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow duration-300"
+              className="bg-white shadow-sm hover:shadow-md transition-shadow duration-300"
             >
               <CardHeader>
-                <CardTitle>{thread.title}</CardTitle>
+                <CardTitle className="text-xl font-semibold text-gray-800">
+                  {thread.title}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>{thread.content}</CardDescription>
+                <p className="text-gray-600 line-clamp-2">{thread.content}</p>
               </CardContent>
               <CardFooter className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">
-                  Created on: {new Date(thread.created_at).toLocaleDateString()}
-                </span>
+                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{thread.messages ? thread.messages.length : 0} replies</span>
+                  <span>•</span>
+                  <span>{new Date(thread.created_at).toLocaleDateString()}</span>
+                </div>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={() => router.push(`/threads/${thread.id}`)}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                 >
-                  <ArrowRight className="h-4 w-4" />
+                  View Thread
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
           ))
         ) : (
-          <Card className="p-6">
-            <p className="text-center text-[#383838]">No threads found. Be the first to start a discussion!</p>
+          <Card className="p-6 bg-white shadow-sm">
+            <p className="text-center text-gray-600">No threads found. Start a new discussion!</p>
           </Card>
         )}
       </div>
     </div>
-  );
+  )
 }
 

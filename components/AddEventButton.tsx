@@ -85,14 +85,14 @@ export default function AddEventButton({ onAddEvent }: AddEventButtonProps) {
           size="sm"
           className="text-[#0264FA] border-[#0264FA] hover:bg-[#0264FA] hover:text-white transition"
         >
-          Add New Event
+          Create New Event
         </Button>
       </DialogTrigger>
 
       {/* Dialog Content */}
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-[#F3F6FF] border border-[#EAEDED]">
         <DialogHeader>
-          <DialogTitle className="text-[#0264FA] font-bold">Add New Event</DialogTitle>
+          <DialogTitle className="text-[#0264FA] font-bold">Create New Event</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
