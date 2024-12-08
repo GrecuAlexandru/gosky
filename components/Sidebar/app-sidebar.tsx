@@ -45,7 +45,7 @@ const sampleData = {
         },
         {
             title: "Help",
-            url: "/help",
+            url: "/dashboard/help",
             icon: MessageCircleQuestion,
         },
     ]

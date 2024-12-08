@@ -1,19 +1,12 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
-import { notFound } from 'next/navigation'
-import { CommunityHeader } from './community-header'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import AddThreadButton from '@/components/AddThreadButton'
-
-interface CommunityData {
-  id: number
-  name: string
-  description: string
-  thread_uuids: number[]
-}
+import { ArrowRight } from 'lucide-react'
 
 interface Thread {
   id: number
@@ -22,43 +15,27 @@ interface Thread {
   created_at: string
 }
 
-export default function ThreadsPage({ params }: { params: Promise<{ id: string }> }) {
-  const [communityData, setCommunityData] = useState<CommunityData>();
+export default function ThreadsPage({ params }: { params: Promise<{ id: number }> }) {
+  const [communityId, setCommunityId] = useState<number>();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const router = useRouter();
 
-  // const { id: communityId } = params;
-
   useEffect(() => {
     const fetchThreads = async () => {
       try {
-        const { id: communityId } = await params;
+        const { id: comId } = await params;
+        setCommunityId(comId);
 
-        const { data: comData, error: comErr } = await supabase
-          .from('communities')
+        const { data, error } = await supabase
+          .from('threads_communities')
           .select('*')
-          .eq('id', communityId)
-          .single();
+          .eq('community_uuid', comId);
 
-        if (comData || !comErr) {
-          notFound();
-        }
+        if (error) throw error;
 
-        if (comErr) throw comErr;
-
-        setCommunityData(comData);
-
-        if (communityData) {
-          const { data, error } = await supabase
-            .from('threads_communities')
-            .select('*')
-            .in('thread_uuid', communityData.thread_uuids);
-            if (error) throw error;
-    
-            setThreads(data || []);
-        }
+        setThreads(data || []);
       } catch (error) {
         console.error('Error fetching threads:', error);
       } finally {
@@ -74,26 +51,50 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: string }
     router.refresh();
   };
 
-  if (loading) {
-    return <p className="text-center text-[#383838]">Loading threads...</p>;
-  }
-
   return (
     <div className="space-y-8 flex-1 w-full p-6 bg-[#F3F6FF] min-h-screen">
-      <div className="flex justify-end">
-        <AddThreadButton onAddThread={handleAddThread} />
+      <h1 className="text-3xl font-bold text-center mb-8">Community Threads</h1>
+      <div className="flex justify-start mb-6">
+        <AddThreadButton onAddThread={handleAddThread} communityId={communityId ?? 0} />
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {threads.map((thread) => (
-          <Card>
-            <CardHeader>
-              <CardTitle>{thread.title}</CardTitle>
-              <CardDescription>{thread.content}</CardDescription>
-            </CardHeader>
+      <div className="space-y-4">
+        {loading ? (
+          <Card className="p-6">
+            <p className="text-center text-[#383838]">Loading threads...</p>
           </Card>
-        ))}
+        ) : threads.length > 0 ? (
+          threads.map((thread) => (
+            <Card
+              key={thread.id}
+              className="bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow duration-300"
+            >
+              <CardHeader>
+                <CardTitle>{thread.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>{thread.content}</CardDescription>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">
+                  Created on: {new Date(thread.created_at).toLocaleDateString()}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => router.push(`/threads/${thread.id}`)}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))
+        ) : (
+          <Card className="p-6">
+            <p className="text-center text-[#383838]">No threads found. Be the first to start a discussion!</p>
+          </Card>
+        )}
       </div>
     </div>
-);
+  );
 }
 

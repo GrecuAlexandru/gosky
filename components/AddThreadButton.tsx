@@ -11,24 +11,26 @@ import { addThreadAction } from "@/app/actions";
 
 interface AddThreadButtonProps {
   onAddThread: (newThread: any) => void;
+  communityId: number;
 }
 
-export default function AddThreadButton({ onAddThread }: AddThreadButtonProps) {
+export default function AddThreadButton({ onAddThread, communityId }: AddThreadButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    community_uuid: communityId,
   });
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const newThread = {
-      id: Date.now(),
       title: formData.title,
       content: formData.content,
+      community_uuid: communityId,
     };
 
     try {
@@ -37,9 +39,9 @@ export default function AddThreadButton({ onAddThread }: AddThreadButtonProps) {
         formDataToSend.append(key, value.toString());
       });
 
-      await addThreadAction(formDataToSend);
-
       onAddThread(newThread);
+      
+      await addThreadAction(formDataToSend, communityId);
     } catch (error) {
       console.error("Error adding thread:", error);
     } finally {

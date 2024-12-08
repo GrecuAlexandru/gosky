@@ -115,13 +115,28 @@ export const addEventAction = async (formData: FormData) => {
       }
     }
   });
-}
 
-  export const addThreadAction = async (formData: FormData) => {
+  // Required field validation
+  if (!eventData.title || !eventData.description || !eventData.start_date || !eventData.end_date) {
+    return encodedRedirect("error", "/events", "Title, description, start date, and end date are required fields.");
+  }
+
+  // Insert the event data into the database
+  const { error } = await supabase.from("events").insert([eventData]);
+
+  if (error) {
+    console.error("Error inserting event:", error.message);
+    return encodedRedirect("error", "/dashboard/events", "Failed to add event.");
+  }
+
+  return encodedRedirect("success", "/dashboard/events", "Event successfully added!");
+};
+
+export const addThreadAction = async (formData: FormData, communityId: number | undefined) => {
   const supabase = await createClient();
 
   // Extract fields dynamically
-  const fields = ["title", "content", "community_id"];
+  const fields = ["title", "content", "community_uuid"];
 
   const threadData: Record<string, any> = {};
 
@@ -134,19 +149,19 @@ export const addEventAction = async (formData: FormData) => {
   });
 
   // Required field validation
-  if (!threadData.title || !threadData.description || !threadData.start_date || !threadData.end_date) {
-    return encodedRedirect("error", "/events", "Title, description, start date, and end date are required fields.");
+  if (!threadData.title || !threadData.content) {
+    return encodedRedirect("error", "/dashboard/communities/" + communityId + "/threads", "Title, description, start date, and end date are required fields.");
   }
 
   // Insert the event data into the database
-  const { error } = await supabase.from("events").insert([threadData]);
+  const { error } = await supabase.from("threads_communities").insert([threadData]);
 
   if (error) {
     console.error("Error inserting event:", error.message);
-    return encodedRedirect("error", "/dashboard/events", "Failed to add event.");
+    return encodedRedirect("error", "/dashboard/communities/" + communityId + "/threads", "Failed to add event.");
   }
 
-  return encodedRedirect("success", "/dashboard/events", "Event successfully added!");
+  return encodedRedirect("success", "/dashboard/communities/" + communityId + "/threads", "Event successfully added!");
 };
 
 export const signUpAction = async (formData: FormData) => {
