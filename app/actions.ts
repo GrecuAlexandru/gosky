@@ -194,6 +194,31 @@ export const addThreadAction = async (formData: FormData, communityId: number | 
   return encodedRedirect("success", "/dashboard/communities/" + communityId + "/threads", "Event successfully added!");
 };
 
+export const addThreadReplyAction = async (formData: FormData, communityId : number | undefined, threadId: number | undefined) => {
+  const supabase = await createClient();
+
+  const fields = ["id", "sender", "content", "timestamp"]
+
+  const messageData: Record<string, any> = {};
+
+  fields.forEach((field) => {
+    const value = formData.get(field)?.toString();
+    if (value !== undefined && value !== "") {
+      messageData[field] = value;
+    }
+  });
+
+  if (!messageData.content) {
+    return encodedRedirect("error", "/dashboard/communities/" + communityId + "/threads/" + threadId, "Content is required.");
+  }
+
+  const { } = await supabase
+    .channel("threads_communities")
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages_communities' }, () => {})
+
+  return encodedRedirect("success", "/dashboard/communities/" + communityId + "/threads/" + threadId, "Reply successfully added!");
+}
+
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
