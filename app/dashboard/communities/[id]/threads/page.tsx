@@ -35,6 +35,7 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: string }
       try {
         const { id: comId } = await params;
         setCommunityId(comId);
+        console.log("params", params);
 
         const { data, error } = await supabase
           .from('threads_communities')

@@ -41,7 +41,7 @@ export default function AddThreadButton({ onAddThread, communityId }: AddThreadB
 
       onAddThread(newThread);
       
-      await addThreadAction(formDataToSend, communityId);
+      await addThreadAction(formDataToSend, Number(communityId));
     } catch (error) {
       console.error("Error adding thread:", error);
     } finally {

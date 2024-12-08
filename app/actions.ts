@@ -162,7 +162,7 @@ export const addEventAction = async (formData: FormData) => {
   return encodedRedirect("success", "/dashboard/events", "Event successfully added!");
 };
 
-export const addThreadAction = async (formData: FormData, communityId: string | undefined) => {
+export const addThreadAction = async (formData: FormData, communityId: number | undefined) => {
   const supabase = await createClient();
 
   // Extract fields dynamically
@@ -177,6 +177,8 @@ export const addThreadAction = async (formData: FormData, communityId: string | 
       threadData[field] = value;
     }
   });
+
+  console.log("threadData", threadData);
 
   // Required field validation
   if (!threadData.title || !threadData.content) {
@@ -194,7 +196,7 @@ export const addThreadAction = async (formData: FormData, communityId: string | 
   return encodedRedirect("success", "/dashboard/communities/" + communityId + "/threads", "Event successfully added!");
 };
 
-export const addThreadReplyAction = async (formData: FormData, communityId : string | undefined, threadId: string | undefined) => {
+export const addThreadReplyAction = async (formData: FormData, communityId : number | undefined, threadId: number | undefined) => {
   const supabase = await createClient();
 
   const fields = ["id", "sender", "content", "timestamp"]

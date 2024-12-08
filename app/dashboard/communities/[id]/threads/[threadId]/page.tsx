@@ -111,7 +111,7 @@ export default function ThreadPage({ params }: { params: { id: string, threadId:
         formDataToSend.append(key, value ? value.toString() : '');
       });
 
-      await addThreadReplyAction(formDataToSend, communityId, thread?.id.toString());
+      await addThreadReplyAction(formDataToSend, Number(communityId), thread?.id);
 
       router.refresh();
     } catch (error) {
