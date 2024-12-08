@@ -33,14 +33,14 @@ interface Thread {
   creator: number
 }
 
-export default function ThreadPage({ params }: { params: { id: number, threadId: number } }) {
+export default function ThreadPage({ params }: { params: { id: string, threadId: string } }) {
   const [thread, setThread] = useState<Thread | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [creator, setCreator] = useState<string | null>(null)
   const [currentSender, setCurrentSender] = useState<Sender | null>(null)
   const [replyContent, setReplyContent] = useState('')
-  const [communityId, setCommunityId] = useState<number | undefined>()
+  const [communityId, setCommunityId] = useState<string | undefined>()
   const supabase = createClient()
   const router = useRouter()
 
@@ -111,7 +111,7 @@ export default function ThreadPage({ params }: { params: { id: number, threadId:
         formDataToSend.append(key, value ? value.toString() : '');
       });
 
-      await addThreadReplyAction(formDataToSend, communityId, thread?.id);
+      await addThreadReplyAction(formDataToSend, communityId, thread?.id.toString());
 
       router.refresh();
     } catch (error) {

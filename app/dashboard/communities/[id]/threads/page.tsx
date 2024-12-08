@@ -23,8 +23,8 @@ interface Thread {
   messages: Message[]
 }
 
-export default function ThreadsPage({ params }: { params: Promise<{ id: number }> }) {
-  const [communityId, setCommunityId] = useState<number>();
+export default function ThreadsPage({ params }: { params: Promise<{ id: string }> }) {
+  const [communityId, setCommunityId] = useState<string>();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -66,7 +66,7 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: number }
           <h1 className="text-4xl font-bold text-gray-800">Community Discussions</h1>
           <p className="text-gray-600 mt-2">Engage in conversations and share your thoughts</p>
         </div>
-        <AddThreadButton onAddThread={handleAddThread} communityId={communityId ?? 0} />
+        <AddThreadButton onAddThread={handleAddThread} communityId={communityId ?? "0"} />
       </div>
 
       <div className="space-y-4">

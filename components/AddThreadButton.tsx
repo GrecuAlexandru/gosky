@@ -11,7 +11,7 @@ import { addThreadAction } from "@/app/actions";
 
 interface AddThreadButtonProps {
   onAddThread: (newThread: any) => void;
-  communityId: number;
+  communityId: string;
 }
 
 export default function AddThreadButton({ onAddThread, communityId }: AddThreadButtonProps) {
