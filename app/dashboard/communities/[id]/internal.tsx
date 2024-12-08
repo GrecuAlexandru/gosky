@@ -203,13 +203,13 @@ export default function Internal(props: CommunityPageProps) {
 
                 <div className="flex space-x-4 mb-8">
                     <Button asChild className="bg-blue-500 hover:bg-blue-600">
-                        <Link href={"/dashboard/communities" + communityData}>
+                        <Link href={"/dashboard/communities/" + id + "/chat"}>
                             <MessageCircle className="w-4 h-4 mr-2" />
                             Chat
                         </Link>
                     </Button>
                     <Button asChild variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-50">
-                        <Link href="/threads">
+                        <Link href={"/dashboard/communities/" + id + "/threads"}>
                             <GitCommitHorizontal className="w-4 h-4 mr-2" />
                             Threads
                         </Link>

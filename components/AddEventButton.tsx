@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { addEventAction } from "@/app/actions";
+import { createClient } from "@/utils/supabase/client";
 
 interface AddEventButtonProps {
   onAddEvent: (newEvent: any) => void;
@@ -19,6 +20,8 @@ export default function AddEventButton({ onAddEvent }: AddEventButtonProps) {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [address, setAddress] = useState({ street: "", city: "", country: "" });
+  const [user, setUser] = useState<{ id: string; events_count: number } | null>(null)
+  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     title: "",
