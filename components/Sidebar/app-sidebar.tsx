@@ -39,11 +39,6 @@ import { usePathname } from 'next/navigation'
 const sampleData = {
     navSecondary: [
         {
-            title: "Settings",
-            url: "/dashboard/settings",
-            icon: Settings2,
-        },
-        {
             title: "Help",
             url: "/dashboard/help",
             icon: MessageCircleQuestion,
@@ -131,7 +126,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent className="flex flex-col justify-between flex-1">
                 <NavYourCommunities active={active} setActive={setActive} />
                 <NavSecondary items={sampleData.navSecondary} className="mt-auto" />
             </SidebarContent>

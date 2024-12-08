@@ -121,6 +121,36 @@ export const addEventAction = async (formData: FormData) => {
     return encodedRedirect("error", "/events", "Title, description, start date, and end date are required fields.");
   }
 
+  // Fetch the user auth
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+
+  if (authError) {
+    console.error("Error fetching user auth:", authError.message);
+    return encodedRedirect("error", "/events", "Failed to add event.");
+  }
+
+  const { data: user, error: userError } = await supabase.from("users").select("events_count").eq("id", authData.user.id).single();
+
+  if (userError) {
+    console.error("Error fetching user data:", userError.message);
+    return encodedRedirect("error", "/dashboard/events", "Failed to add event.");
+  }
+
+  // Increment the user's event count
+  const { error: updateError } = await supabase
+    .from("users")
+    .update({ events_count: user.events_count + 1 })
+    .eq("id", authData.user.id);
+
+  if (updateError) {
+    console.error("Error updating user data:", updateError.message);
+    return encodedRedirect("error", "/dashboard/events", "Failed to add event.");
+  }
+
+  if (user.events_count >= 10) {
+    return encodedRedirect("error", "/dashboard/pricing", "You have reached the maximum number of events.");
+  }
+
   // Insert the event data into the database
   const { error } = await supabase.from("events").insert([eventData]);
 
