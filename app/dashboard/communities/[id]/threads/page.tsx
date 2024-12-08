@@ -24,7 +24,6 @@ interface Thread {
 }
 
 export default function ThreadsPage({ params }: { params: Promise<{ id: number }> }) {
-  const [communityData, setCommunityData] = useState<CommunityData>();
   const [communityId, setCommunityId] = useState<number>();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,37 +36,17 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: number }
         const { id: comId } = await params;
         setCommunityId(comId);
 
-        console.log("Community ID: " + comId);
-        const { data: comData, error: comErr } = await supabase
-          .from('communities')
+        const { data, error } = await supabase
+          .from('threads_communities')
           .select('*')
-          .eq('id', comId)
-          .single();
-        
-          console.log("Community data: " + comData);
-          
-          if (!comData || comErr) {
-            notFound();
-          }
-          
-        if (comErr) throw comErr;
+          .eq('community_uuid', comId);
 
-        setCommunityData(comData);
+        console.log(data);
+        if (error) throw error;
 
-        if (true) {
-          console.log("Threads for community " + comId + ": " + comData.threads_uuids);
-          const { data, error } = await supabase
-            .from('threads_communities')
-            .select('*')
-            // .in('id', comData.threads_uuids);
-
-            console.log(data);
-            if (error) throw error;
-
-            setThreads(data || []);
-        }
+        setThreads(data || []);
       } catch (error) {
-        console.error('Error fetching threads:', error);   
+        console.error('Error fetching threads:', error);
       } finally {
         setLoading(false);
       }
@@ -88,7 +67,7 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: number }
   return (
     <div className="space-y-8 flex-1 w-full p-6 bg-[#F3F6FF] min-h-screen">
       <div className="flex justify-end">
-        <AddThreadButton onAddThread={handleAddThread} communityId={communityId} threads={threads} />
+        <AddThreadButton onAddThread={handleAddThread} communityId={communityId == null ? 0 : communityId} />
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {threads.map((thread) => (

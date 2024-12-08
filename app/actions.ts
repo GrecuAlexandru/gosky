@@ -132,11 +132,11 @@ export const addEventAction = async (formData: FormData) => {
   return encodedRedirect("success", "/dashboard/events", "Event successfully added!");
 };
 
-export const addThreadAction = async (formData: FormData, communityId: number | undefined, threads: any) => {
+export const addThreadAction = async (formData: FormData, communityId: number | undefined) => {
   const supabase = await createClient();
 
   // Extract fields dynamically
-  const fields = ["title", "content"];
+  const fields = ["title", "content", "community_uuid"];
 
   const threadData: Record<string, any> = {};
 
@@ -155,10 +155,6 @@ export const addThreadAction = async (formData: FormData, communityId: number | 
 
   // Insert the event data into the database
   const { error } = await supabase.from("threads_communities").insert([threadData]);
-  
-  const threadsIds = threads.map((thread: any) => thread.id);
-  console.log("New thread ids: " + threadsIds);
-  const { error: error2 } = await supabase.from("communities").update({ threads_uuids: threadsIds }).eq("id", communityId);
 
   if (error) {
     console.error("Error inserting event:", error.message);
