@@ -1,13 +1,12 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
-import { notFound } from 'next/navigation'
-import { CommunityHeader } from './community-header'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import AddThreadButton from '@/components/AddThreadButton'
-import { set } from 'react-hook-form'
+import { ArrowRight } from 'lucide-react'
 
 interface CommunityData {
   id: number
@@ -66,14 +65,15 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: number }
 
   return (
     <div className="space-y-8 flex-1 w-full p-6 bg-[#F3F6FF] min-h-screen">
-      <div className="flex justify-end">
-        <AddThreadButton onAddThread={handleAddThread} communityId={communityId == null ? 0 : communityId} />
+      <h1 className="text-3xl font-bold text-center mb-8">Community Threads</h1>
+      <div className="flex justify-start mb-6">
+        <AddThreadButton onAddThread={handleAddThread} communityId={communityId ?? 0} />
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {threads.map((thread) => (
           <Card
             key={thread.id}
-            className="bg-white shadow-md rounded-lg flex flex-col justify-between hover:shadow-lg transition-shadow duration-300"
+            className="bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow duration-300"
           >
             <CardHeader>
               <CardTitle>{thread.title}</CardTitle>
@@ -81,6 +81,18 @@ export default function ThreadsPage({ params }: { params: Promise<{ id: number }
             <CardContent>
               <CardDescription>{thread.content}</CardDescription>
             </CardContent>
+            <CardFooter className="flex justify-between items-center">
+              <span className="text-sm text-gray-500">
+                Created on: {new Date(thread.created_at).toLocaleDateString()}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push(`/dashboard/${communityId}/threads/${thread.id}`)}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </CardFooter>
           </Card>
         ))}
       </div>
