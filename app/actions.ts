@@ -76,6 +76,7 @@ export async function joinCommunity(communityId: string) {
 
 export const addEventAction = async (formData: FormData) => {
   const supabase = await createClient();
+  console.log("IN ADDEVENTACTION");
 
   // Extract fields dynamically (removed "participants")
   const fields = [
@@ -164,6 +165,7 @@ export const addEventAction = async (formData: FormData) => {
 
 export const addThreadAction = async (formData: FormData, communityId: number | undefined) => {
   const supabase = await createClient();
+  console.log("IN ADDTHREADACTION");
 
   // Extract fields dynamically
   const fields = ["title", "content", "community_uuid"];
@@ -177,8 +179,6 @@ export const addThreadAction = async (formData: FormData, communityId: number | 
       threadData[field] = value;
     }
   });
-
-  console.log("threadData", threadData);
 
   // Required field validation
   if (!threadData.title || !threadData.content) {

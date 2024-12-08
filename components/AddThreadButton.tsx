@@ -7,14 +7,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { addThreadAction } from "@/app/actions";
+import { addEventAction, addThreadAction } from "@/app/actions";
+import { createClient } from "@/utils/supabase/client";
 
 interface AddThreadButtonProps {
   onAddThread: (newThread: any) => void;
-  communityId: string;
+  communityId: number;
 }
 
 export default function AddThreadButton({ onAddThread, communityId }: AddThreadButtonProps) {
+  const supabase = createClient();
+  
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -39,9 +42,10 @@ export default function AddThreadButton({ onAddThread, communityId }: AddThreadB
         formDataToSend.append(key, value.toString());
       });
 
-      onAddThread(newThread);
+      console.log("calling addThreadAction", formDataToSend, communityId);
+      await addThreadAction(formDataToSend, communityId);
       
-      await addThreadAction(formDataToSend, Number(communityId));
+      onAddThread(newThread);
     } catch (error) {
       console.error("Error adding thread:", error);
     } finally {
