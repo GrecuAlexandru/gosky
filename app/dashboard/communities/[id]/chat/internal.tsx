@@ -65,7 +65,7 @@ export default function Internal(props: ChatPageProps) {
     const [newMessage, setNewMessage] = useState('')
     const [communityData, setCommunityData] = useState<{ name: string, icon: string } | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
-    const [user, setUser] = React.useState<{ id: string; isAdmin: boolean, username: string, first_name: string, last_name: string } | null>(null)
+    const [user, setUser] = React.useState<{ id: string; isAdmin: boolean, username: string, first_name: string, last_name: string, apartment: string } | null>(null)
     const [messagesCommunityId, setMessagesCommunityId] = useState<string | null>(null)
 
     useEffect(() => {
@@ -109,10 +109,10 @@ export default function Internal(props: ChatPageProps) {
                 return
             }
 
-            setUser({ id: data.user.id, isAdmin: false, username: "", first_name: data.user.user_metadata.full_name, last_name: "" })
+            setUser({ id: data.user.id, isAdmin: false, username: "", first_name: data.user.user_metadata.full_name, last_name: "", apartment: "" })
             const { data: userData, error: userError } = await supabase
                 .from("users")
-                .select("id, isAdmin, username, first_name, last_name")
+                .select("id, isAdmin, username, first_name, last_name, apartment")
                 .eq("id", data.user.id)
                 .single()
 
@@ -121,7 +121,7 @@ export default function Internal(props: ChatPageProps) {
                 return
             }
 
-            setUser({ id: userData.id, isAdmin: userData.isAdmin, username: userData.username, first_name: userData.first_name, last_name: userData.last_name })
+            setUser({ id: userData.id, isAdmin: userData.isAdmin, username: userData.username, first_name: userData.first_name, last_name: userData.last_name, apartment: userData.apartment })
 
         }
 
@@ -188,6 +188,43 @@ export default function Internal(props: ChatPageProps) {
         return <div>Loading...</div>
     }
 
+    const myMentionClassName = 'bg-yellow-200 text-blue-500 px-1 rounded';
+    const mentionClassName = 'text-bold text-purple-200';
+
+    function highlightMentions(content: string) {
+        const mentionRegex = /@([\w.\s]+)/g;
+        return content.split(mentionRegex).map((part, index) => {
+            if (index % 2 === 0) {
+                // Regular text
+                return part;
+            } else {
+                // Mentioned text
+                const mention = part.trim();
+                console.log(mention.toLowerCase());
+                console.log(user?.apartment?.toLowerCase());
+                console.log(user?.username?.toLowerCase());
+                console.log(`${user?.first_name?.toLowerCase()} ${user?.last_name?.toLowerCase()}`);
+                console.log(user?.first_name?.toLowerCase());
+                console.log(user?.last_name?.toLowerCase());
+
+                const isUserMention =
+                    user &&
+                    (mention.toLowerCase() === user.apartment?.toLowerCase() ||
+                        mention.toLowerCase() === user.username?.toLowerCase() ||
+                        mention.toLowerCase() === `${user.first_name?.toLowerCase()} ${user.last_name?.toLowerCase()}` ||
+                        mention.toLowerCase() === user.first_name?.toLowerCase() ||
+                        mention.toLowerCase() === user.last_name?.toLowerCase());
+
+
+                const className = isUserMention ? myMentionClassName : mentionClassName;
+
+                return (
+                    <span key={index} className={className}>@{mention}</span>
+                );
+            }
+        });
+    }
+
     console.log(messages);
 
     return (
@@ -213,7 +250,7 @@ export default function Internal(props: ChatPageProps) {
                                 <Card className={`${message.sender.id === user?.id ? 'bg-blue-500 text-white' : 'bg-white'}`}>
                                     <CardContent className="p-3">
                                         <p className="text-base font-semibold mb-1">{message.sender.name}</p>
-                                        <p className="text-base">{message.content}</p>
+                                        <p className="text-base">{highlightMentions(message.content)}</p>
                                         <p className={`text-sm mt-1 ${message.sender.id === user?.id ? 'text-blue-100' : 'text-gray-500'}`}>
                                             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
